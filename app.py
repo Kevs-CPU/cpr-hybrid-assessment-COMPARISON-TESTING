@@ -7,268 +7,506 @@ import pandas as pd
 # ==========================================
 
 st.set_page_config(
-    page_title="CPR Comparative Research Dashboard",
+    page_title="CPR Research Dashboard",
     page_icon="❤️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
+
+# ==========================================
+# PROFESSIONAL GLASSMORPHISM DESIGN
+# ==========================================
+
+st.markdown("""
+<style>
+
+/* Main background */
+.stApp {
+    background:
+        radial-gradient(circle at 10% 10%,
+        rgba(115, 169, 210, 0.22), transparent 35%),
+        radial-gradient(circle at 90% 85%,
+        rgba(139, 178, 204, 0.22), transparent 35%),
+        linear-gradient(135deg, #edf3f8, #e5edf4, #f5f8fb);
+
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Remove unnecessary header and footer */
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+[data-testid="stToolbar"] {
+    display: none;
+}
+
+footer {
+    visibility: hidden;
+}
+
+/* Main container */
+.block-container {
+    max-width: 1500px;
+    padding: 0.8rem 2rem 0.4rem;
+}
+
+/* Compact spacing */
+[data-testid="stVerticalBlock"] {
+    gap: 0.55rem;
+}
+
+/* Typography */
+h1, h2, h3, p, label {
+    color: #203449;
+}
+
+h1 {
+    font-size: 2rem !important;
+    font-weight: 750 !important;
+    letter-spacing: -1px;
+}
+
+h2 {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+}
+
+h3 {
+    font-size: 1rem !important;
+}
+
+/* Hero glass panel */
+.hero {
+    background: rgba(255, 255, 255, 0.48);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 20px;
+
+    padding: 17px 24px;
+    box-shadow: 0 8px 28px rgba(35, 65, 90, 0.07);
+    margin-bottom: 4px;
+}
+
+.hero-label {
+    color: #5680a2;
+    font-size: 0.69rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.hero-title {
+    color: #203c56;
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1.18;
+    margin: 0;
+}
+
+.hero-subtitle {
+    color: #647b90;
+    font-size: 0.88rem;
+    margin-top: 7px;
+}
+
+/* Glass cards */
+.glass-card {
+    background: rgba(255, 255, 255, 0.52);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 16px;
+
+    padding: 15px 17px;
+    min-height: 112px;
+
+    box-shadow: 0 6px 22px rgba(35, 65, 90, 0.055);
+}
+
+.card-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+    color: #66829a;
+    margin-bottom: 8px;
+}
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 750;
+    color: #29445e;
+    margin-bottom: 5px;
+}
+
+.card-description {
+    font-size: 0.79rem;
+    color: #667d90;
+    line-height: 1.45;
+}
+
+.proposed-card {
+    background: rgba(220, 240, 231, 0.55);
+    border: 1px solid rgba(125, 190, 158, 0.55);
+}
+
+/* Status cards */
+.status-card {
+    background: rgba(255,255,255,0.52);
+    backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 14px;
+
+    padding: 11px 14px;
+    text-align: center;
+}
+
+.status-value {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #294b68;
+}
+
+.status-name {
+    font-size: 0.72rem;
+    color: #71869a;
+    font-weight: 650;
+}
+
+/* Section label */
+.section-label {
+    font-size: 1rem;
+    font-weight: 750;
+    color: #29445e;
+    margin: 4px 0 5px;
+}
+
+/* Upload area */
+[data-testid="stFileUploader"] {
+    background: rgba(255,255,255,0.45);
+    border: 1px dashed rgba(91,130,162,0.45);
+    border-radius: 13px;
+    padding: 9px;
+}
+
+[data-testid="stFileUploaderDropzone"] {
+    background: rgba(255,255,255,0.4);
+    border: none;
+}
+
+/* Alerts */
+[data-testid="stAlert"] {
+    background: rgba(255,255,255,0.58);
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.8);
+}
+
+/* Metric cards */
+[data-testid="stMetric"] {
+    background: rgba(255,255,255,0.48);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 13px;
+    padding: 9px 12px;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #71869a;
+}
+
+[data-testid="stMetricValue"] {
+    color: #294b68;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    color: #8497a8;
+    font-size: 0.7rem;
+    padding: 5px 0;
+}
+
+/* Desktop screen fitting */
+@media (max-height: 800px) {
+    .block-container {
+        padding-top: 0.45rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .hero {
+        padding: 12px 19px;
+    }
+
+    .glass-card {
+        min-height: 100px;
+        padding: 11px 14px;
+    }
+
+    h1 {
+        font-size: 1.65rem !important;
+    }
+}
+
+/* Smaller screens: allow access to all content */
+@media (max-width: 900px) {
+    .stApp {
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+    }
+
+    .block-container {
+        padding: 1rem;
+    }
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 
 # ==========================================
 # HEADER
 # ==========================================
 
-st.title("AI-Assisted CPR Proper Execution Training System")
+st.markdown("""
+<div class="hero">
+    <div class="hero-label">
+        NORTH EASTERN MINDANAO STATE UNIVERSITY
+        | LIANGA CAMPUS
+    </div>
 
-st.subheader("Comparative Research and Experimental Dashboard")
+    <div class="hero-title">
+        AI-Assisted CPR Proper Execution Training System
+    </div>
 
-st.caption(
-    "Undergraduate Thesis | BS Computer Science | "
-    "Lianga, Surigao del Sur"
-)
+    <div class="hero-subtitle">
+        Comparative Research and Experimental Dashboard
+        &nbsp; • &nbsp; BS Computer Science
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-st.divider()
 
 # ==========================================
 # RESEARCH FRAMEWORK
 # ==========================================
 
-st.header("Research Framework")
+st.markdown(
+    '<div class="section-label">Research Framework</div>',
+    unsafe_allow_html=True
+)
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns(3, gap="medium")
 
 with col1:
-    st.info("EXISTING SYSTEM 1")
-    st.subheader("Ecker et al. (2024)")
-    st.write("MediaPipe Pose-Based CPR Assessment")
-    st.caption(
-        "Video-based body landmark analysis "
-        "and CPR measurement assessment."
-    )
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-label">EXISTING SYSTEM 01</div>
+        <div class="card-title">Ecker et al. (2024)</div>
+        <div class="card-description">
+            MediaPipe Pose-based CPR assessment.
+            Body landmark analysis and CPR measurement evaluation.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col2:
-    st.info("EXISTING SYSTEM 2")
-    st.subheader("SmartCPR (2024)")
-    st.write("MoveNet-Based CPR Assessment")
-    st.caption(
-        "Smartphone-based pose estimation "
-        "and CPR performance assessment."
-    )
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-label">EXISTING SYSTEM 02</div>
+        <div class="card-title">SmartCPR (2024)</div>
+        <div class="card-description">
+            MoveNet-based smartphone CPR assessment
+            with measurement analysis and feedback.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
 with col3:
-    st.success("PROPOSED SYSTEM")
-    st.subheader("Our Hybrid CPR System")
-    st.write(
-        "MediaPipe Pose + MediaPipe Hand"
-    )
-    st.caption(
-        "Machine Learning Classification + "
-        "Rule-Based Assessment + Hybrid Decision Engine."
-    )
+    st.markdown("""
+    <div class="glass-card proposed-card">
+        <div class="card-label">PROPOSED CONTRIBUTION</div>
+        <div class="card-title">Hybrid CPR System</div>
+        <div class="card-description">
+            MediaPipe Pose + Hand, Machine Learning,
+            Rule-Based Assessment and Hybrid Decision Engine.
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
-st.divider()
 
 # ==========================================
 # EXPERIMENTAL STATUS
 # ==========================================
 
-st.header("Experimental Status")
-
-status1, status2, status3 = st.columns(3)
-
-with status1:
-    st.metric("Existing Systems", "2")
-
-with status2:
-    st.metric("Proposed System", "1")
-
-with status3:
-    st.metric("Experimental Results", "Pending")
-
-st.warning(
-    "No actual experimental results are available yet. "
-    "Performance metrics will only be displayed after "
-    "valid testing data have been collected."
+st.markdown(
+    '<div class="section-label">Experimental Status</div>',
+    unsafe_allow_html=True
 )
 
-st.divider()
+s1, s2, s3, s4 = st.columns(4, gap="small")
+
+with s1:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">02</div>
+        <div class="status-name">Existing References</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s2:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">01</div>
+        <div class="status-name">Proposed System</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s3:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">GBC</div>
+        <div class="status-name">Provisional ML Model</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s4:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">Pending</div>
+        <div class="status-name">Experimental Results</div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ==========================================
-# MACHINE LEARNING APPROACH
+# DATASET AND MODEL
 # ==========================================
 
-st.header("Machine Learning Classification")
+left, right = st.columns([1.25, 1], gap="medium")
 
-st.subheader("Gradient Boosting Classifier (GBC)")
+with left:
 
-st.write(
-    "Gradient Boosting Classifier is the provisional "
-    "Machine Learning candidate for classifying selected "
-    "CPR movement patterns using extracted body and "
-    "hand movement features."
-)
-
-st.caption(
-    "The final algorithm selection will depend on "
-    "dataset suitability, validation performance, "
-    "and computational requirements."
-)
-
-st.divider()
-
-# ==========================================
-# EXPERIMENTAL DATASET UPLOAD
-# ==========================================
-
-st.header("Experimental Dataset")
-
-st.write(
-    "Upload validated experimental predictions "
-    "to inspect the dataset used for system comparison."
-)
-
-uploaded_file = st.file_uploader(
-    "Upload experimental predictions (CSV)",
-    type=["csv"]
-)
-
-if uploaded_file is not None:
-
-    try:
-        data = pd.read_csv(uploaded_file)
-
-        if data.empty:
-            st.error("The uploaded CSV file contains no records.")
-
-        else:
-            st.success("Dataset uploaded successfully.")
-
-            col1, col2 = st.columns(2)
-
-            with col1:
-                st.metric(
-                    "Total Records",
-                    len(data)
-                )
-
-            with col2:
-                st.metric(
-                    "Total Columns",
-                    len(data.columns)
-                )
-
-            st.subheader("Dataset Preview")
-
-            st.dataframe(
-                data,
-                use_container_width=True
-            )
-
-            required_columns = [
-                "participant_id",
-                "clip_id",
-                "system",
-                "actual_label",
-                "predicted_label"
-            ]
-
-            missing_columns = [
-                col for col in required_columns
-                if col not in data.columns
-            ]
-
-            if not missing_columns:
-                st.success(
-                    "Required experimental comparison columns detected."
-                )
-            else:
-                st.warning(
-                    "Missing columns: "
-                    + ", ".join(missing_columns)
-                    + ". Classification evaluation is not yet available."
-                )
-
-    except pd.errors.EmptyDataError:
-        st.error("The uploaded CSV file is empty.")
-
-    except pd.errors.ParserError:
-        st.error("Unable to read the CSV structure. Check the file format.")
-
-    except Exception as error:
-        st.error(f"Dataset processing error: {error}")
-
-else:
-    st.info(
-        "No experimental dataset uploaded. "
-        "Results will appear after actual testing."
+    st.markdown(
+        '<div class="section-label">Experimental Dataset</div>',
+        unsafe_allow_html=True
     )
 
-st.divider()
+    uploaded_file = st.file_uploader(
+        "Upload validated prediction data (CSV)",
+        type=["csv"],
+        label_visibility="collapsed"
+    )
+
+    if uploaded_file is not None:
+        try:
+            data = pd.read_csv(uploaded_file)
+
+            if data.empty:
+                st.error("The uploaded CSV contains no records.")
+
+            else:
+                required = [
+                    "participant_id",
+                    "clip_id",
+                    "system",
+                    "actual_label",
+                    "predicted_label"
+                ]
+
+                missing = [
+                    col for col in required
+                    if col not in data.columns
+                ]
+
+                if missing:
+                    st.warning(
+                        "Missing columns: " + ", ".join(missing)
+                    )
+
+                else:
+                    st.success(
+                        f"Validated structure detected: "
+                        f"{len(data)} records."
+                    )
+
+        except (pd.errors.EmptyDataError,
+                pd.errors.ParserError,
+                UnicodeDecodeError):
+            st.error("Unable to read this CSV file.")
+
+    else:
+        st.caption(
+            "No experimental data uploaded. "
+            "Results will remain pending until valid testing."
+        )
+
+
+with right:
+
+    st.markdown(
+        '<div class="section-label">Machine Learning Approach</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown("""
+    <div class="glass-card">
+        <div class="card-label">PROVISIONAL CLASSIFICATION MODEL</div>
+        <div class="card-title">
+            Gradient Boosting Classifier
+        </div>
+        <div class="card-description">
+            Uses extracted body and hand movement features
+            to classify selected CPR movement patterns.
+            Final selection depends on validation and
+            computational performance.
+        </div>
+        <br>
+        <div class="card-label">
+            MLflow EXPERIMENT TRACKING: NOT CONNECTED
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 
 # ==========================================
-# EXPERIMENTAL EVALUATION
+# PLANNED EVALUATION METRICS
 # ==========================================
 
-st.header("Planned Evaluation Metrics")
-
-metric1, metric2, metric3, metric4 = st.columns(4)
-
-with metric1:
-    st.write("Accuracy")
-
-with metric2:
-    st.write("Precision")
-
-with metric3:
-    st.write("Recall")
-
-with metric4:
-    st.write("F1-Score")
-
-st.caption(
-    "These metrics will be calculated after independent "
-    "model testing using evaluator-approved reference labels."
+st.markdown(
+    '<div class="section-label">Planned Evaluation Metrics</div>',
+    unsafe_allow_html=True
 )
 
-st.divider()
+m1, m2, m3, m4 = st.columns(4, gap="small")
 
-# ==========================================
-# MLflow INTEGRATION
-# ==========================================
+with m1:
+    st.metric("Accuracy", "Pending")
 
-st.header("Machine Learning Experiment Tracking")
+with m2:
+    st.metric("Precision", "Pending")
 
-st.info(
-    "MLflow integration is pending. "
-    "The hosted tracking service will record model parameters, "
-    "evaluation metrics, and experiment runs after configuration."
-)
+with m3:
+    st.metric("Recall", "Pending")
 
-st.divider()
+with m4:
+    st.metric("F1-Score", "Pending")
 
-# ==========================================
-# RESEARCH LIMITATIONS
-# ==========================================
-
-st.header("Research Scope and Limitations")
-
-st.write(
-    "The proposed application is designed as a supplementary "
-    "CPR training and assessment tool for selected observable "
-    "movements during simulated adult chest-compression practice."
-)
-
-st.write(
-    "The system does not replace qualified CPR instructors, "
-    "practical assessment using an appropriate instrumented "
-    "manikin, or official CPR guidelines."
-)
 
 # ==========================================
 # FOOTER
 # ==========================================
 
-st.divider()
-
-st.caption(
-    "AI-Assisted CPR Proper Execution Training System | "
-    "NEMSU - Lianga Campus | BS Computer Science | 2026"
-)
+st.markdown("""
+<div class="footer">
+    NEMSU - Lianga Campus
+    &nbsp; | &nbsp;
+    AI-Assisted CPR Research Project
+    &nbsp; | &nbsp;
+    2026
+</div>
+""", unsafe_allow_html=True)
