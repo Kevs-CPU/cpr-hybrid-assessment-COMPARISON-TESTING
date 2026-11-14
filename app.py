@@ -1,631 +1,288 @@
+import html
 
-import streamlit as st
 import pandas as pd
-
-# ==========================================
-# PAGE CONFIGURATION
-# ==========================================
+import streamlit as st
 
 st.set_page_config(
     page_title="CPR Research Dashboard",
     page_icon="❤️",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
-# ==========================================
-# PROFESSIONAL GLASSMORPHISM DESIGN
-# ==========================================
+REQUIRED = ["participant_id", "clip_id", "system", "actual_label", "predicted_label"]
 
+# ==========================================
+# STYLE: MLflow-inspired striped gradient, one-screen layout
+# ==========================================
 st.markdown("""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
 
-/* ==========================================
-   GLOBAL BACKGROUND AND TEXT
-========================================== */
-
+html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+    height: 100vh; overflow: hidden !important;
+    font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
+}
 .stApp {
+    color: #fff !important;
     background:
-        radial-gradient(circle at 10% 10%,
-        rgba(115, 169, 210, 0.20), transparent 35%),
-        radial-gradient(circle at 90% 85%,
-        rgba(139, 178, 204, 0.20), transparent 35%),
-        linear-gradient(135deg, #edf3f8, #e5edf4, #f5f8fb);
-
-    color: #203449 !important;
-    min-height: 100vh;
-    overflow-x: hidden;
+      linear-gradient(180deg, rgba(13,17,23,0) 0%, rgba(13,17,23,0) 22%,
+                      rgba(13,17,23,.88) 62%, #0d1117 100%),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 14px, rgba(255,255,255,.04) 14px 28px),
+      linear-gradient(90deg, #7a0e48 0%, #c4170f 40%, #d8230f 52%, #6d4fa3 72%, #1f8cf2 100%);
 }
+[data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
+footer { display: none !important; }
+.block-container { max-width: 1500px; padding: .8rem 2rem .4rem !important; }
+[data-testid="stVerticalBlock"] { gap: .55rem; }
+[data-testid="stElementContainer"], [data-testid="stMarkdownContainer"] { margin: 0; }
 
-/* Light theme consistency */
-html, body, [data-testid="stAppViewContainer"] {
-    color: #203449 !important;
+/* header */
+.eyebrow { font-size: .78rem; font-weight: 500; color: rgba(255,255,255,.78); }
+.title { font-size: 1.75rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+.sub { font-size: .82rem; color: rgba(255,255,255,.78); margin-top: 2px; }
+
+/* uploader */
+[data-testid="stFileUploader"] * { color: #fff !important; }
+[data-testid="stFileUploader"] section {
+    background: rgba(13,17,23,.55) !important; border: 1.5px dashed rgba(255,255,255,.4) !important;
+    border-radius: 12px !important; padding: .4rem .7rem !important;
 }
+[data-testid="stFileUploader"] small { display: none; }
+[data-testid="stFileUploader"] button { background: #fff !important; border: 0 !important;
+    border-radius: 8px !important; font-weight: 700 !important; }
+[data-testid="stFileUploader"] button * { color: #0d1117 !important; }
+[data-testid="stFileUploaderFile"] { padding: 0 !important; min-height: 0 !important; }
 
-[data-testid="stHeader"] {
-    background: transparent;
+/* system switcher */
+[data-testid="stRadio"] [role="radiogroup"] { gap: .35rem; justify-content: flex-end; flex-wrap: nowrap; }
+[data-testid="stRadio"] label { background: rgba(13,17,23,.55); border: 1px solid rgba(255,255,255,.25);
+    border-radius: 999px; padding: 2px 14px; margin: 0; cursor: pointer; }
+[data-testid="stRadio"] label > div:first-child { display: none; }
+[data-testid="stRadio"] label p { color: #fff !important; font-size: .8rem; font-weight: 500; }
+[data-testid="stRadio"] label:has(input:checked) { background: #fff; }
+[data-testid="stRadio"] label:has(input:checked) p { color: #0d1117 !important; font-weight: 700; }
+
+/* status pills */
+.pills { display: flex; gap: .4rem; flex-wrap: nowrap; overflow: hidden; align-items: center; height: 32px; }
+.pill { font-size: .78rem; padding: 4px 12px; border-radius: 999px; white-space: nowrap;
+    background: rgba(13,17,23,.55); border: 1px solid rgba(255,255,255,.22); }
+.pill.ok { border-color: #5be39a; color: #b9ffd9; }
+.pill.bad { border-color: #ff8a80; color: #ffd0cc; }
+
+/* cards */
+.card, .panel { background: rgba(13,17,23,.58); backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,.16); border-radius: 14px; }
+.kpi { padding: 10px 16px; height: 84px; }
+.kpi .v { font-size: 1.8rem; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.kpi .v.pending { color: rgba(255,255,255,.55); font-size: 1.4rem; padding-top: 5px; }
+.kpi .l { font-size: .8rem; font-weight: 700; }
+.kpi .s { font-size: .72rem; color: rgba(255,255,255,.65); white-space: nowrap; overflow: hidden; }
+
+.panel { padding: 12px 16px; height: calc(100vh - 292px); min-height: 230px; overflow: hidden; }
+.ptitle { font-size: .98rem; font-weight: 800; margin-bottom: 8px; }
+.ptitle span { font-size: .72rem; font-weight: 400; color: rgba(255,255,255,.65); margin-left: 8px; }
+.empty { color: rgba(255,255,255,.6); font-size: .85rem; padding-top: 14%; text-align: center; }
+
+/* comparison bars */
+.sys { padding: 6px 10px; margin-bottom: 6px; border-radius: 10px; border: 1px solid transparent; }
+.sys.hl { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.4); }
+.sh { display: flex; justify-content: space-between; font-size: .84rem; margin-bottom: 3px; }
+.sh span { color: rgba(255,255,255,.65); font-size: .74rem; }
+.brow { display: grid; grid-template-columns: 62px 1fr 48px; align-items: center; gap: 8px; height: 17px; }
+.bl, .bv { font-size: .72rem; color: rgba(255,255,255,.8); }
+.bv { text-align: right; font-weight: 700; color: #fff; }
+.track { height: 7px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #e0261a, #8a3fb0, #2a8cf5); }
+
+/* confusion matrix */
+.cm { display: grid; gap: 4px; }
+.cm-h { font-size: .72rem; color: rgba(255,255,255,.75); text-align: center; align-self: center;
+    overflow: hidden; text-overflow: ellipsis; }
+.cm-c { min-height: 38px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; font-weight: 800; font-size: .95rem; }
+.note { font-size: .72rem; color: rgba(255,255,255,.6); margin-top: 8px; }
+
+/* framework */
+.fw { padding: 8px 12px; border-radius: 10px; margin-bottom: 7px; background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12); }
+.fw.new { background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.5); }
+.fw b { font-size: .86rem; } .fw div { font-size: .73rem; color: rgba(255,255,255,.72); line-height: 1.35; }
+.foot { font-size: .68rem; color: rgba(255,255,255,.5); margin-top: 4px; }
+
+@media (max-height: 760px) {
+  .title { font-size: 1.4rem; } .kpi { height: 72px; padding: 6px 14px; }
+  .kpi .v { font-size: 1.45rem; } .cm-c { min-height: 30px; } .panel { height: calc(100vh - 268px); }
 }
-
-[data-testid="stToolbar"] {
-    display: none;
-}
-
-footer {
-    visibility: hidden;
-}
-
-/* Main content */
-.block-container {
-    max-width: 1500px;
-    padding: 0.8rem 2rem 1rem;
-}
-
-/* All standard text */
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp h4,
-.stApp p,
-.stApp label,
-.stApp li,
-.stApp span,
-.stApp small,
-[data-testid="stMarkdownContainer"],
-[data-testid="stCaptionContainer"] {
-    color: #203449;
-}
-
-/* Headings */
-h1 {
-    font-size: 1.9rem !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.7px;
-}
-
-h2 {
-    font-size: 1.15rem !important;
-    font-weight: 750 !important;
-}
-
-h3 {
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-}
-
-/* ==========================================
-   GLASS HERO HEADER
-========================================== */
-
-.hero {
-    background: rgba(255,255,255,0.58);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-
-    border: 1px solid rgba(255,255,255,0.95);
-    border-radius: 20px;
-
-    padding: 17px 24px;
-    margin-bottom: 9px;
-
-    box-shadow: 0 8px 28px rgba(35,65,90,0.07);
-}
-
-.hero-label {
-    color: #426987 !important;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 1.8px;
-    margin-bottom: 6px;
-}
-
-.hero-title {
-    color: #203c56 !important;
-    font-size: 1.7rem;
-    font-weight: 800;
-    line-height: 1.25;
-}
-
-.hero-subtitle {
-    color: #536d84 !important;
-    font-size: 0.85rem;
-    margin-top: 7px;
-}
-
-/* ==========================================
-   GLASS CARDS
-========================================== */
-
-.glass-card {
-    background: rgba(255,255,255,0.62);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
-
-    border: 1px solid rgba(255,255,255,0.95);
-    border-radius: 16px;
-
-    padding: 15px 17px;
-    min-height: 112px;
-
-    box-shadow: 0 6px 22px rgba(35,65,90,0.06);
-}
-
-.card-label {
-    font-size: 0.67rem;
-    font-weight: 850;
-    letter-spacing: 1.2px;
-    color: #4d728f !important;
-    margin-bottom: 8px;
-}
-
-.card-title {
-    font-size: 1.04rem;
-    font-weight: 800;
-    color: #203c56 !important;
-    margin-bottom: 6px;
-}
-
-.card-description {
-    font-size: 0.78rem;
-    color: #526b81 !important;
-    line-height: 1.5;
-}
-
-.proposed-card {
-    background: rgba(220,240,231,0.72);
-    border: 1px solid rgba(125,190,158,0.65);
-}
-
-/* ==========================================
-   STATUS CARDS
-========================================== */
-
-.status-card {
-    background: rgba(255,255,255,0.65);
-    backdrop-filter: blur(16px);
-
-    border: 1px solid rgba(255,255,255,0.95);
-    border-radius: 14px;
-
-    padding: 11px 14px;
-    text-align: center;
-
-    box-shadow: 0 5px 18px rgba(35,65,90,0.05);
-}
-
-.status-value {
-    font-size: 1.35rem;
-    font-weight: 850;
-    color: #244968 !important;
-}
-
-.status-name {
-    font-size: 0.72rem;
-    color: #526d83 !important;
-    font-weight: 700;
-}
-
-/* ==========================================
-   SECTION LABELS
-========================================== */
-
-.section-label {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #29445e !important;
-    margin: 7px 0 6px;
-}
-
-/* ==========================================
-   CSV UPLOADER - IMPORTANT FIX
-========================================== */
-
-[data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.78) !important;
-    border: 1px solid rgba(255,255,255,0.95) !important;
-    border-radius: 14px !important;
-    padding: 12px !important;
-
-    box-shadow: 0 5px 18px rgba(35,65,90,0.06);
-}
-
-/* Dropzone background */
-[data-testid="stFileUploaderDropzone"] {
-    background: rgba(237,244,250,0.95) !important;
-    border: 1.5px dashed #8ba9c0 !important;
-    border-radius: 12px !important;
-}
-
-/* Upload instructions */
-[data-testid="stFileUploaderDropzoneInstructions"],
-[data-testid="stFileUploaderDropzoneInstructions"] *,
-[data-testid="stFileUploader"] p,
-[data-testid="stFileUploader"] span,
-[data-testid="stFileUploader"] small {
-    color: #29445e !important;
-}
-
-/* Browse files button */
-[data-testid="stFileUploaderDropzone"] button {
-    background: #dceaf5 !important;
-    border: 1px solid #9bb8cf !important;
-    border-radius: 8px !important;
-
-    color: #203c56 !important;
-    font-weight: 750 !important;
-}
-
-/* Force button text visibility */
-[data-testid="stFileUploaderDropzone"] button *,
-[data-testid="stFileUploaderDropzone"] button span,
-[data-testid="stFileUploaderDropzone"] button p {
-    color: #203c56 !important;
-}
-
-/* Hover */
-[data-testid="stFileUploaderDropzone"] button:hover {
-    background: #cbdfee !important;
-    border-color: #7397b4 !important;
-}
-
-/* Uploaded file name and details */
-[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
-[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
-    color: #29445e !important;
-}
-
-/* ==========================================
-   ALERT BOXES
-========================================== */
-
-[data-testid="stAlert"] {
-    background: rgba(255,255,255,0.75) !important;
-    border: 1px solid rgba(255,255,255,0.95) !important;
-    border-radius: 12px;
-}
-
-[data-testid="stAlert"] p,
-[data-testid="stAlert"] span {
-    color: #29445e !important;
-}
-
-/* ==========================================
-   METRIC CARDS
-========================================== */
-
-[data-testid="stMetric"] {
-    background: rgba(255,255,255,0.72) !important;
-    border: 1px solid rgba(255,255,255,0.95);
-    border-radius: 13px;
-    padding: 10px 13px;
-}
-
-[data-testid="stMetricLabel"] {
-    color: #526d83 !important;
-}
-
-[data-testid="stMetricValue"] {
-    color: #244968 !important;
-}
-
-/* ==========================================
-   DATAFRAME
-========================================== */
-
-[data-testid="stDataFrame"] {
-    border: 1px solid #d4e1ec;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-/* ==========================================
-   FOOTER
-========================================== */
-
-.footer {
-    text-align: center;
-    color: #647d91 !important;
-    font-size: 0.7rem;
-    padding: 8px 0;
-}
-
-/* ==========================================
-   RESPONSIVE AND SCREEN FIT
-========================================== */
-
-@media (max-height: 800px) {
-    .block-container {
-        padding-top: 0.45rem;
-        padding-bottom: 0.5rem;
-    }
-
-    .hero {
-        padding: 12px 19px;
-    }
-
-    .glass-card {
-        min-height: 100px;
-        padding: 11px 14px;
-    }
-
-    h1 {
-        font-size: 1.65rem !important;
-    }
-}
-
-/* Tablet and mobile */
 @media (max-width: 900px) {
-    .block-container {
-        padding: 1rem;
-    }
-
-    .hero-title {
-        font-size: 1.35rem;
-    }
-
-    .glass-card {
-        min-height: auto;
-    }
+  html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"] {
+      height: auto; overflow: auto !important; }
+  .panel { height: auto; }
 }
-
 </style>
 """, unsafe_allow_html=True)
 
 
 # ==========================================
-# HEADER
+# HELPERS
 # ==========================================
+def esc(x):
+    return html.escape(str(x))
 
-st.markdown("""
-<div class="hero">
-    <div class="hero-label">
-        NORTH EASTERN MINDANAO STATE UNIVERSITY
-        | LIANGA CAMPUS
-    </div>
 
-    <div class="hero-title">
-        AI-Assisted CPR Proper Execution Training System
-    </div>
+def pct(v):
+    return f"{v * 100:.1f}%"
 
-    <div class="hero-subtitle">
-        Comparative Research and Experimental Dashboard
-        &nbsp; • &nbsp; BS Computer Science
-    </div>
-</div>
+
+def evaluate(df):
+    """Accuracy plus macro-averaged precision, recall and F1."""
+    y, p = df["actual_label"], df["predicted_label"]
+    labels = sorted(set(y) | set(p))
+    cm = pd.crosstab(y, p).reindex(index=labels, columns=labels, fill_value=0)
+    tp = pd.Series(cm.values.diagonal(), index=labels)
+    prec = (tp / cm.sum(axis=0)).fillna(0)
+    rec = (tp / cm.sum(axis=1)).fillna(0)
+    f1 = (2 * prec * rec / (prec + rec)).fillna(0)
+    return {"n": len(df), "acc": float((y == p).mean()), "prec": float(prec.mean()),
+            "rec": float(rec.mean()), "f1": float(f1.mean()), "cm": cm}
+
+
+def kpi(label, value, sub):
+    val = f'<div class="v">{value}</div>' if value else '<div class="v pending">Pending</div>'
+    return f'<div class="card kpi"><div class="l">{label}</div>{val}<div class="s">{sub}</div></div>'
+
+
+def bar(name, v):
+    return (f'<div class="brow"><span class="bl">{name}</span><div class="track">'
+            f'<div class="fill" style="width:{v * 100:.1f}%"></div></div><span class="bv">{pct(v)}</span></div>')
+
+
+def comparison(results, view):
+    out = ""
+    for name, r in results.items():
+        hl = " hl" if name == view else ""
+        out += (f'<div class="sys{hl}"><div class="sh"><b>{esc(name)}</b><span>{r["n"]} records</span></div>'
+                + bar("Accuracy", r["acc"]) + bar("Precision", r["prec"])
+                + bar("Recall", r["rec"]) + bar("F1-score", r["f1"]) + "</div>")
+    return out
+
+
+def confusion(cm):
+    mx = max(int(cm.values.max()), 1)
+    cells = '<div class="cm-h"></div>' + "".join(f'<div class="cm-h">{esc(c)}</div>' for c in cm.columns)
+    for a in cm.index:
+        cells += f'<div class="cm-h">{esc(a)}</div>'
+        for p in cm.columns:
+            v = int(cm.loc[a, p])
+            alpha = 0.06 if v == 0 else 0.18 + 0.75 * v / mx
+            rgb = "31,140,242" if a == p else "224,38,26"
+            cells += f'<div class="cm-c" style="background:rgba({rgb},{alpha:.2f})">{v}</div>'
+    return (f'<div class="cm" style="grid-template-columns:auto repeat({len(cm.columns)},1fr)">{cells}</div>'
+            '<div class="note">Rows are actual labels, columns are predicted labels. '
+            'Blue cells are correct, red cells are errors.</div>')
+
+
+# ==========================================
+# HEADER + UPLOADER
+# ==========================================
+head, up_col = st.columns([1.5, 1], gap="large")
+with head:
+    st.markdown("""
+<div class="eyebrow">North Eastern Mindanao State University, Lianga Campus</div>
+<div class="title">AI-Assisted CPR Proper Execution Training System</div>
+<div class="sub">Comparative research and experimental dashboard for BS Computer Science</div>
 """, unsafe_allow_html=True)
-
+with up_col:
+    uploaded = st.file_uploader("Experimental predictions CSV", type=["csv"],
+                                label_visibility="collapsed")
 
 # ==========================================
-# RESEARCH FRAMEWORK
+# LOAD + COMPUTE (automatic on upload)
 # ==========================================
+df, results, pills = None, {}, ""
+if uploaded is None:
+    pills = '<span class="pill">Upload the predictions CSV and every result appears here automatically</span>'
+else:
+    try:
+        raw = pd.read_csv(uploaded)
+        raw.columns = [str(c).strip().lower() for c in raw.columns]
+        missing = [c for c in REQUIRED if c not in raw.columns]
+        if raw.empty:
+            pills = '<span class="pill bad">The CSV has no records</span>'
+        elif missing:
+            pills = f'<span class="pill bad">Missing columns: {esc(", ".join(missing))}</span>'
+        else:
+            df = raw.dropna(subset=REQUIRED).copy()
+            for c in ("actual_label", "predicted_label"):
+                df[c] = df[c].astype(str).str.strip().str.lower()
+            df["system"] = df["system"].astype(str).str.strip()
+            if df.empty:
+                df = None
+                pills = '<span class="pill bad">Every row has an empty required value</span>'
+    except (pd.errors.EmptyDataError, pd.errors.ParserError, UnicodeDecodeError):
+        pills = '<span class="pill bad">Cannot read this file. Check that it is a valid CSV</span>'
 
-st.markdown(
-    '<div class="section-label">Research Framework</div>',
-    unsafe_allow_html=True
-)
+view = "All systems"
+sel_col = None
+if df is not None:
+    systems = list(df["system"].unique())
+    results = {s: evaluate(g) for s, g in df.groupby("system", sort=False)}
+    results["All systems"] = evaluate(df)
+    options = ["All systems"] + systems
+    hybrid = next((s for s in systems if "hybrid" in s.lower()), None)
+    default = options.index(hybrid) if hybrid else 0
+    pills = (f'<span class="pill ok">✓ {esc(uploaded.name)}</span>'
+             f'<span class="pill">{len(df)} records</span>'
+             f'<span class="pill">{df["participant_id"].nunique()} participants</span>'
+             f'<span class="pill">{df["clip_id"].nunique()} clips</span>'
+             f'<span class="pill">{len(systems)} systems</span>')
 
-col1, col2, col3 = st.columns(3, gap="medium")
+strip, switch = st.columns([1.5, 1], gap="large")
+with strip:
+    st.markdown(f'<div class="pills">{pills}</div>', unsafe_allow_html=True)
+with switch:
+    if df is not None:
+        view = st.radio("System", options, index=default, horizontal=True,
+                        label_visibility="collapsed")
 
-with col1:
+cur = results.get(view)
+
+# ==========================================
+# KPI ROW
+# ==========================================
+sub = f"{esc(view)}, macro average" if cur else "Waiting for experimental data"
+k = st.columns(5, gap="small")
+cards = [("Accuracy", pct(cur["acc"]) if cur else None), ("Precision", pct(cur["prec"]) if cur else None),
+         ("Recall", pct(cur["rec"]) if cur else None), ("F1-score", pct(cur["f1"]) if cur else None),
+         ("Records evaluated", str(cur["n"]) if cur else None)]
+for col, (label, value) in zip(k, cards):
+    with col:
+        st.markdown(kpi(label, value, sub if label != "Records evaluated" else esc(view) if cur else sub),
+                    unsafe_allow_html=True)
+
+# ==========================================
+# MAIN PANELS
+# ==========================================
+c1, c2, c3 = st.columns([1.4, 1, 0.95], gap="small")
+
+with c1:
+    body = comparison({s: r for s, r in results.items() if s != "All systems"}, view) if cur \
+        else '<div class="empty">System comparison will appear after the CSV is uploaded.</div>'
+    st.markdown(f'<div class="panel"><div class="ptitle">System comparison'
+                f'<span>Higher is better</span></div>{body}</div>', unsafe_allow_html=True)
+
+with c2:
+    body = confusion(cur["cm"]) if cur \
+        else '<div class="empty">The confusion matrix will appear after the CSV is uploaded.</div>'
+    st.markdown(f'<div class="panel"><div class="ptitle">Confusion matrix'
+                f'<span>{esc(view) if cur else ""}</span></div>{body}</div>', unsafe_allow_html=True)
+
+with c3:
     st.markdown("""
-    <div class="glass-card">
-        <div class="card-label">EXISTING SYSTEM 01</div>
-        <div class="card-title">Ecker et al. (2024)</div>
-        <div class="card-description">
-            MediaPipe Pose-based CPR assessment.
-            Body landmark analysis and CPR measurement evaluation.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="glass-card">
-        <div class="card-label">EXISTING SYSTEM 02</div>
-        <div class="card-title">SmartCPR (2024)</div>
-        <div class="card-description">
-            MoveNet-based smartphone CPR assessment
-            with measurement analysis and feedback.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown("""
-    <div class="glass-card proposed-card">
-        <div class="card-label">PROPOSED CONTRIBUTION</div>
-        <div class="card-title">Hybrid CPR System</div>
-        <div class="card-description">
-            MediaPipe Pose + Hand, Machine Learning,
-            Rule-Based Assessment and Hybrid Decision Engine.
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ==========================================
-# EXPERIMENTAL STATUS
-# ==========================================
-
-st.markdown(
-    '<div class="section-label">Experimental Status</div>',
-    unsafe_allow_html=True
-)
-
-s1, s2, s3, s4 = st.columns(4, gap="small")
-
-with s1:
-    st.markdown("""
-    <div class="status-card">
-        <div class="status-value">02</div>
-        <div class="status-name">Existing References</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with s2:
-    st.markdown("""
-    <div class="status-card">
-        <div class="status-value">01</div>
-        <div class="status-name">Proposed System</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with s3:
-    st.markdown("""
-    <div class="status-card">
-        <div class="status-value">GBC</div>
-        <div class="status-name">Provisional ML Model</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with s4:
-    st.markdown("""
-    <div class="status-card">
-        <div class="status-value">Pending</div>
-        <div class="status-name">Experimental Results</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ==========================================
-# DATASET AND MODEL
-# ==========================================
-
-left, right = st.columns([1.25, 1], gap="medium")
-
-with left:
-
-    st.markdown(
-        '<div class="section-label">Experimental Dataset</div>',
-        unsafe_allow_html=True
-    )
-
-    uploaded_file = st.file_uploader(
-        "Choose a CSV file",
-        type=["csv"],
-        help="Upload a validated experimental predictions CSV file."
-    )
-
-    if uploaded_file is not None:
-        try:
-            data = pd.read_csv(uploaded_file)
-
-            if data.empty:
-                st.error("The uploaded CSV contains no records.")
-
-            else:
-                st.success(
-                    f"CSV uploaded successfully: {len(data)} records."
-                )
-
-                required = [
-                    "participant_id",
-                    "clip_id",
-                    "system",
-                    "actual_label",
-                    "predicted_label"
-                ]
-
-                missing = [
-                    col for col in required
-                    if col not in data.columns
-                ]
-
-                if missing:
-                    st.warning(
-                        "Missing columns: " + ", ".join(missing)
-                    )
-                else:
-                    st.success(
-                        "All required experimental columns are present."
-                    )
-
-                with st.expander("Preview uploaded dataset"):
-                    st.dataframe(
-                        data,
-                        use_container_width=True
-                    )
-
-        except (pd.errors.EmptyDataError,
-                pd.errors.ParserError,
-                UnicodeDecodeError):
-            st.error(
-                "Unable to read the CSV file. Please check its format."
-            )
-
-    else:
-        st.caption(
-            "No experimental data uploaded. "
-            "Results will remain pending until valid testing."
-        )
-
-
-with right:
-
-    st.markdown(
-        '<div class="section-label">Machine Learning Approach</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown("""
-    <div class="glass-card">
-        <div class="card-label">
-            PROVISIONAL CLASSIFICATION MODEL
-        </div>
-
-        <div class="card-title">
-            Gradient Boosting Classifier
-        </div>
-
-        <div class="card-description">
-            Uses extracted body and hand movement features
-            to classify selected CPR movement patterns.
-            Final selection depends on validation performance
-            and computational requirements.
-        </div>
-
-        <br>
-
-        <div class="card-label">
-            MLFLOW EXPERIMENT TRACKING: NOT CONNECTED
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# ==========================================
-# PLANNED EVALUATION METRICS
-# ==========================================
-
-st.markdown(
-    '<div class="section-label">Planned Evaluation Metrics</div>',
-    unsafe_allow_html=True
-)
-
-m1, m2, m3, m4 = st.columns(4, gap="small")
-
-with m1:
-    st.metric("Accuracy", "Pending")
-
-with m2:
-    st.metric("Precision", "Pending")
-
-with m3:
-    st.metric("Recall", "Pending")
-
-with m4:
-    st.metric("F1-Score", "Pending")
-
-
-# ==========================================
-# FOOTER
-# ==========================================
-
-st.markdown("""
-<div class="footer">
-    NEMSU - Lianga Campus
-    &nbsp; | &nbsp;
-    AI-Assisted CPR Research Project
-    &nbsp; | &nbsp;
-    2026
-</div>
+<div class="panel"><div class="ptitle">Research framework</div>
+<div class="fw"><b>Ecker et al. (2024)</b><div>Existing system. MediaPipe Pose landmark analysis and CPR measurement evaluation.</div></div>
+<div class="fw"><b>SmartCPR (2024)</b><div>Existing system. MoveNet smartphone CPR assessment with measurement analysis and feedback.</div></div>
+<div class="fw new"><b>Hybrid CPR System</b><div>Proposed. MediaPipe Pose and Hand, machine learning, rule-based assessment and a hybrid decision engine.</div></div>
+<div class="fw"><b>Gradient Boosting Classifier</b><div>Provisional model. MLflow experiment tracking: not connected.</div></div>
+<div class="foot">NEMSU Lianga Campus, AI-Assisted CPR Research Project, 2026</div></div>
 """, unsafe_allow_html=True)
