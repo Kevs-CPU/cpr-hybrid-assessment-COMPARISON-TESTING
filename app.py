@@ -2,9 +2,9 @@
 import streamlit as st
 import pandas as pd
 
-# ==================================================
+# ==========================================
 # PAGE CONFIGURATION
-# ==================================================
+# ==========================================
 
 st.set_page_config(
     page_title="CPR Research Dashboard",
@@ -13,23 +13,33 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ==================================================
-# MLflow-INSPIRED PROFESSIONAL THEME
-# ==================================================
+# ==========================================
+# PROFESSIONAL GLASSMORPHISM DESIGN
+# ==========================================
 
 st.markdown("""
 <style>
 
-/* GLOBAL */
+/* ==========================================
+   GLOBAL BACKGROUND AND TEXT
+========================================== */
+
 .stApp {
-    background: linear-gradient(
-        135deg,
-        #f4f6fa 0%,
-        #edf2f8 55%,
-        #f8fafc 100%
-    );
-    color: #27364b;
+    background:
+        radial-gradient(circle at 10% 10%,
+        rgba(115, 169, 210, 0.20), transparent 35%),
+        radial-gradient(circle at 90% 85%,
+        rgba(139, 178, 204, 0.20), transparent 35%),
+        linear-gradient(135deg, #edf3f8, #e5edf4, #f5f8fb);
+
+    color: #203449 !important;
     min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* Light theme consistency */
+html, body, [data-testid="stAppViewContainer"] {
+    color: #203449 !important;
 }
 
 [data-testid="stHeader"] {
@@ -37,34 +47,43 @@ st.markdown("""
 }
 
 [data-testid="stToolbar"] {
-    visibility: hidden;
+    display: none;
 }
 
 footer {
     visibility: hidden;
 }
 
+/* Main content */
 .block-container {
     max-width: 1500px;
-    padding: 0.75rem 2rem 0.5rem;
+    padding: 0.8rem 2rem 1rem;
 }
 
-/* TYPOGRAPHY */
-h1, h2, h3, h4, p, label {
-    color: #27364b;
+/* All standard text */
+.stApp h1,
+.stApp h2,
+.stApp h3,
+.stApp h4,
+.stApp p,
+.stApp label,
+.stApp li,
+.stApp span,
+.stApp small,
+[data-testid="stMarkdownContainer"],
+[data-testid="stCaptionContainer"] {
+    color: #203449;
 }
 
-.stMarkdown p {
-    color: #46566b;
-}
-
+/* Headings */
 h1 {
-    font-size: 1.75rem !important;
+    font-size: 1.9rem !important;
     font-weight: 800 !important;
+    letter-spacing: -0.7px;
 }
 
 h2 {
-    font-size: 1.12rem !important;
+    font-size: 1.15rem !important;
     font-weight: 750 !important;
 }
 
@@ -73,273 +92,277 @@ h3 {
     font-weight: 700 !important;
 }
 
-/* HEADER */
+/* ==========================================
+   GLASS HERO HEADER
+========================================== */
+
 .hero {
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: rgba(255,255,255,0.58);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 
-    border: 1px solid #dce4ef;
-    border-left: 5px solid #2775bd;
-    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 20px;
 
-    padding: 15px 22px;
-    margin-bottom: 12px;
+    padding: 17px 24px;
+    margin-bottom: 9px;
 
-    box-shadow: 0 4px 15px rgba(30, 52, 80, 0.055);
+    box-shadow: 0 8px 28px rgba(35,65,90,0.07);
 }
 
 .hero-label {
-    color: #2775bd !important;
-    font-size: 0.66rem;
-    font-weight: 850;
-    letter-spacing: 1.5px;
-    margin-bottom: 5px;
+    color: #426987 !important;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    margin-bottom: 6px;
 }
 
 .hero-title {
-    color: #1c2f48 !important;
-    font-size: 1.65rem;
+    color: #203c56 !important;
+    font-size: 1.7rem;
     font-weight: 800;
     line-height: 1.25;
 }
 
 .hero-subtitle {
-    color: #697a90 !important;
-    font-size: 0.82rem;
-    margin-top: 5px;
+    color: #536d84 !important;
+    font-size: 0.85rem;
+    margin-top: 7px;
 }
 
-/* SECTION TITLES */
-.section-title {
-    font-size: 0.98rem;
-    font-weight: 800;
-    color: #243b56 !important;
-    margin: 8px 0 7px;
-}
+/* ==========================================
+   GLASS CARDS
+========================================== */
 
-/* RESEARCH CARDS */
-.research-card {
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(15px);
+.glass-card {
+    background: rgba(255,255,255,0.62);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
 
-    border: 1px solid #dce4ef;
-    border-radius: 13px;
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 16px;
 
-    padding: 13px 15px;
+    padding: 15px 17px;
     min-height: 112px;
 
-    box-shadow: 0 3px 12px rgba(30,52,80,0.04);
-}
-
-.research-card-proposed {
-    background: rgba(232, 242, 252, 0.92);
-    border: 1px solid #b9d4ec;
+    box-shadow: 0 6px 22px rgba(35,65,90,0.06);
 }
 
 .card-label {
-    font-size: 0.64rem;
+    font-size: 0.67rem;
     font-weight: 850;
     letter-spacing: 1.2px;
-    color: #3477b1 !important;
-    margin-bottom: 7px;
+    color: #4d728f !important;
+    margin-bottom: 8px;
 }
 
 .card-title {
-    font-size: 1rem;
+    font-size: 1.04rem;
     font-weight: 800;
-    color: #243b56 !important;
-    margin-bottom: 5px;
+    color: #203c56 !important;
+    margin-bottom: 6px;
 }
 
 .card-description {
-    font-size: 0.76rem;
-    line-height: 1.45;
-    color: #596b80 !important;
+    font-size: 0.78rem;
+    color: #526b81 !important;
+    line-height: 1.5;
 }
 
-/* STATUS CARDS */
-.status-card {
-    background: rgba(255,255,255,0.9);
-    border: 1px solid #dce4ef;
-    border-radius: 11px;
+.proposed-card {
+    background: rgba(220,240,231,0.72);
+    border: 1px solid rgba(125,190,158,0.65);
+}
 
-    padding: 9px;
+/* ==========================================
+   STATUS CARDS
+========================================== */
+
+.status-card {
+    background: rgba(255,255,255,0.65);
+    backdrop-filter: blur(16px);
+
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 14px;
+
+    padding: 11px 14px;
     text-align: center;
+
+    box-shadow: 0 5px 18px rgba(35,65,90,0.05);
 }
 
 .status-value {
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     font-weight: 850;
-    color: #216eae !important;
+    color: #244968 !important;
 }
 
 .status-name {
-    font-size: 0.69rem;
+    font-size: 0.72rem;
+    color: #526d83 !important;
     font-weight: 700;
-    color: #63758a !important;
 }
 
-/* GBC FEATURE CARD */
-.gbc-card {
-    background: linear-gradient(
-        120deg,
-        #183653 0%,
-        #234e78 60%,
-        #2b6594 100%
-    );
+/* ==========================================
+   SECTION LABELS
+========================================== */
 
-    border: 1px solid #315f88;
-    border-radius: 14px;
-
-    padding: 15px 17px;
-    min-height: 210px;
-
-    box-shadow: 0 5px 18px rgba(25,56,88,0.13);
+.section-label {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #29445e !important;
+    margin: 7px 0 6px;
 }
 
-.gbc-label {
-    color: #b9d9f5 !important;
-    font-size: 0.64rem;
-    font-weight: 850;
-    letter-spacing: 1.3px;
-}
+/* ==========================================
+   CSV UPLOADER - IMPORTANT FIX
+========================================== */
 
-.gbc-title {
-    color: #ffffff !important;
-    font-size: 1.25rem;
-    font-weight: 850;
-    margin: 6px 0 11px;
-}
-
-.gbc-heading {
-    color: #a9d4fa !important;
-    font-size: 0.66rem;
-    font-weight: 850;
-    letter-spacing: 1px;
-    margin-top: 9px;
-}
-
-.gbc-text {
-    color: #f0f5fb !important;
-    font-size: 0.78rem;
-    line-height: 1.45;
-    margin-top: 3px;
-}
-
-/* GLASS PANELS */
-.panel {
-    background: rgba(255,255,255,0.86);
-    border: 1px solid #dce4ef;
-    border-radius: 13px;
-    padding: 13px 15px;
-    box-shadow: 0 3px 12px rgba(30,52,80,0.04);
-}
-
-/* CSV UPLOADER */
 [data-testid="stFileUploader"] {
-    background: rgba(255,255,255,0.94) !important;
-    border: 1px solid #d4dfeb !important;
-    border-radius: 12px !important;
-    padding: 10px !important;
+    background: rgba(255,255,255,0.78) !important;
+    border: 1px solid rgba(255,255,255,0.95) !important;
+    border-radius: 14px !important;
+    padding: 12px !important;
+
+    box-shadow: 0 5px 18px rgba(35,65,90,0.06);
 }
 
-/* Dropzone */
+/* Dropzone background */
 [data-testid="stFileUploaderDropzone"] {
-    background: #f3f7fc !important;
-    border: 1px dashed #8daac6 !important;
-    border-radius: 9px !important;
+    background: rgba(237,244,250,0.95) !important;
+    border: 1.5px dashed #8ba9c0 !important;
+    border-radius: 12px !important;
 }
 
-/* Upload instruction text */
+/* Upload instructions */
 [data-testid="stFileUploaderDropzoneInstructions"],
 [data-testid="stFileUploaderDropzoneInstructions"] *,
 [data-testid="stFileUploader"] p,
 [data-testid="stFileUploader"] span,
 [data-testid="stFileUploader"] small {
-    color: #344a62 !important;
+    color: #29445e !important;
 }
 
 /* Browse files button */
 [data-testid="stFileUploaderDropzone"] button {
-    background: #dceafa !important;
-    border: 1px solid #91b5d8 !important;
-    border-radius: 7px !important;
-    color: #174d7a !important;
+    background: #dceaf5 !important;
+    border: 1px solid #9bb8cf !important;
+    border-radius: 8px !important;
+
+    color: #203c56 !important;
     font-weight: 750 !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button * {
-    color: #174d7a !important;
+/* Force button text visibility */
+[data-testid="stFileUploaderDropzone"] button *,
+[data-testid="stFileUploaderDropzone"] button span,
+[data-testid="stFileUploaderDropzone"] button p {
+    color: #203c56 !important;
 }
 
+/* Hover */
 [data-testid="stFileUploaderDropzone"] button:hover {
-    background: #c9def2 !important;
-    border-color: #548ab9 !important;
+    background: #cbdfee !important;
+    border-color: #7397b4 !important;
 }
 
-/* ALERTS */
+/* Uploaded file name and details */
+[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"],
+[data-testid="stFileUploader"] [data-testid="stMarkdownContainer"] * {
+    color: #29445e !important;
+}
+
+/* ==========================================
+   ALERT BOXES
+========================================== */
+
 [data-testid="stAlert"] {
-    background: #f5f8fc;
-    border-radius: 10px;
-    border: 1px solid #dce5ef;
+    background: rgba(255,255,255,0.75) !important;
+    border: 1px solid rgba(255,255,255,0.95) !important;
+    border-radius: 12px;
 }
 
 [data-testid="stAlert"] p,
 [data-testid="stAlert"] span {
-    color: #334a62 !important;
+    color: #29445e !important;
 }
 
-/* METRICS */
+/* ==========================================
+   METRIC CARDS
+========================================== */
+
 [data-testid="stMetric"] {
-    background: rgba(255,255,255,0.9);
-    border: 1px solid #dce4ef;
-    border-radius: 11px;
-    padding: 9px 12px;
+    background: rgba(255,255,255,0.72) !important;
+    border: 1px solid rgba(255,255,255,0.95);
+    border-radius: 13px;
+    padding: 10px 13px;
 }
 
 [data-testid="stMetricLabel"] {
-    color: #60748b !important;
+    color: #526d83 !important;
 }
 
 [data-testid="stMetricValue"] {
-    color: #216eae !important;
+    color: #244968 !important;
 }
 
-/* BUTTONS */
-.stButton button {
-    background: #216eae;
-    border: 1px solid #216eae;
-    border-radius: 8px;
-    color: white !important;
-    font-weight: 700;
+/* ==========================================
+   DATAFRAME
+========================================== */
+
+[data-testid="stDataFrame"] {
+    border: 1px solid #d4e1ec;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
-.stButton button:hover {
-    background: #185a91;
-    border-color: #185a91;
-    color: white !important;
-}
+/* ==========================================
+   FOOTER
+========================================== */
 
-/* FOOTER */
 .footer {
     text-align: center;
-    color: #8291a3 !important;
-    font-size: 0.68rem;
-    padding: 6px 0;
+    color: #647d91 !important;
+    font-size: 0.7rem;
+    padding: 8px 0;
 }
 
-/* RESPONSIVE */
+/* ==========================================
+   RESPONSIVE AND SCREEN FIT
+========================================== */
+
+@media (max-height: 800px) {
+    .block-container {
+        padding-top: 0.45rem;
+        padding-bottom: 0.5rem;
+    }
+
+    .hero {
+        padding: 12px 19px;
+    }
+
+    .glass-card {
+        min-height: 100px;
+        padding: 11px 14px;
+    }
+
+    h1 {
+        font-size: 1.65rem !important;
+    }
+}
+
+/* Tablet and mobile */
 @media (max-width: 900px) {
     .block-container {
         padding: 1rem;
     }
 
     .hero-title {
-        font-size: 1.3rem;
+        font-size: 1.35rem;
     }
 
-    .research-card {
+    .glass-card {
         min-height: auto;
     }
 }
@@ -348,9 +371,9 @@ h3 {
 """, unsafe_allow_html=True)
 
 
-# ==================================================
+# ==========================================
 # HEADER
-# ==================================================
+# ==========================================
 
 st.markdown("""
 <div class="hero">
@@ -365,18 +388,18 @@ st.markdown("""
 
     <div class="hero-subtitle">
         Comparative Research and Experimental Dashboard
-        &nbsp; | &nbsp; Bachelor of Science in Computer Science
+        &nbsp; • &nbsp; BS Computer Science
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 
-# ==================================================
+# ==========================================
 # RESEARCH FRAMEWORK
-# ==================================================
+# ==========================================
 
 st.markdown(
-    '<div class="section-title">Research Framework</div>',
+    '<div class="section-label">Research Framework</div>',
     unsafe_allow_html=True
 )
 
@@ -384,7 +407,7 @@ col1, col2, col3 = st.columns(3, gap="medium")
 
 with col1:
     st.markdown("""
-    <div class="research-card">
+    <div class="glass-card">
         <div class="card-label">EXISTING SYSTEM 01</div>
         <div class="card-title">Ecker et al. (2024)</div>
         <div class="card-description">
@@ -396,7 +419,7 @@ with col1:
 
 with col2:
     st.markdown("""
-    <div class="research-card">
+    <div class="glass-card">
         <div class="card-label">EXISTING SYSTEM 02</div>
         <div class="card-title">SmartCPR (2024)</div>
         <div class="card-description">
@@ -408,67 +431,81 @@ with col2:
 
 with col3:
     st.markdown("""
-    <div class="research-card research-card-proposed">
+    <div class="glass-card proposed-card">
         <div class="card-label">PROPOSED CONTRIBUTION</div>
         <div class="card-title">Hybrid CPR System</div>
         <div class="card-description">
-            MediaPipe Pose + MediaPipe Hand,
-            Machine Learning, Rule-Based Assessment
-            and Hybrid Decision Engine.
+            MediaPipe Pose + Hand, Machine Learning,
+            Rule-Based Assessment and Hybrid Decision Engine.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 
-# ==================================================
+# ==========================================
 # EXPERIMENTAL STATUS
-# ==================================================
+# ==========================================
 
 st.markdown(
-    '<div class="section-title">Experimental Status</div>',
+    '<div class="section-label">Experimental Status</div>',
     unsafe_allow_html=True
 )
 
 s1, s2, s3, s4 = st.columns(4, gap="small")
 
-status_items = [
-    (s1, "02", "Existing Systems"),
-    (s2, "01", "Proposed System"),
-    (s3, "GBC", "Provisional Algorithm"),
-    (s4, "Pending", "Experimental Results")
-]
+with s1:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">02</div>
+        <div class="status-name">Existing References</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-for column, value, label in status_items:
-    with column:
-        st.markdown(f"""
-        <div class="status-card">
-            <div class="status-value">{value}</div>
-            <div class="status-name">{label}</div>
-        </div>
-        """, unsafe_allow_html=True)
+with s2:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">01</div>
+        <div class="status-name">Proposed System</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s3:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">GBC</div>
+        <div class="status-name">Provisional ML Model</div>
+    </div>
+    """, unsafe_allow_html=True)
+
+with s4:
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-value">Pending</div>
+        <div class="status-name">Experimental Results</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
-# ==================================================
-# MAIN CONTENT: DATASET + GBC
-# ==================================================
+# ==========================================
+# DATASET AND MODEL
+# ==========================================
 
-left, right = st.columns([1.05, 1.25], gap="medium")
+left, right = st.columns([1.25, 1], gap="medium")
 
 with left:
 
     st.markdown(
-        '<div class="section-title">Experimental Dataset</div>',
+        '<div class="section-label">Experimental Dataset</div>',
         unsafe_allow_html=True
     )
 
     uploaded_file = st.file_uploader(
         "Choose a CSV file",
         type=["csv"],
-        help="Upload validated experimental prediction data."
+        help="Upload a validated experimental predictions CSV file."
     )
 
     if uploaded_file is not None:
-
         try:
             data = pd.read_csv(uploaded_file)
 
@@ -480,7 +517,7 @@ with left:
                     f"CSV uploaded successfully: {len(data)} records."
                 )
 
-                required_columns = [
+                required = [
                     "participant_id",
                     "clip_id",
                     "system",
@@ -489,8 +526,8 @@ with left:
                 ]
 
                 missing = [
-                    column for column in required_columns
-                    if column not in data.columns
+                    col for col in required
+                    if col not in data.columns
                 ]
 
                 if missing:
@@ -508,80 +545,59 @@ with left:
                         use_container_width=True
                     )
 
-        except (
-            pd.errors.EmptyDataError,
-            pd.errors.ParserError,
-            UnicodeDecodeError
-        ):
+        except (pd.errors.EmptyDataError,
+                pd.errors.ParserError,
+                UnicodeDecodeError):
             st.error(
-                "Unable to read the CSV. Please check its format."
+                "Unable to read the CSV file. Please check its format."
             )
-
-        except Exception as error:
-            st.error(f"Dataset error: {error}")
 
     else:
         st.caption(
-            "No experimental dataset uploaded. "
-            "Actual results will appear after testing."
+            "No experimental data uploaded. "
+            "Results will remain pending until valid testing."
         )
 
 
 with right:
 
     st.markdown(
-        '<div class="section-title">Selected Machine Learning Algorithm</div>',
+        '<div class="section-label">Machine Learning Approach</div>',
         unsafe_allow_html=True
     )
 
     st.markdown("""
-    <div class="gbc-card">
-
-        <div class="gbc-label">
-            PROVISIONAL SELECTED ALGORITHM
+    <div class="glass-card">
+        <div class="card-label">
+            PROVISIONAL CLASSIFICATION MODEL
         </div>
 
-        <div class="gbc-title">
-            Gradient Boosting Classifier (GBC)
+        <div class="card-title">
+            Gradient Boosting Classifier
         </div>
 
-        <div class="gbc-heading">
-            ALGORITHM TYPE
+        <div class="card-description">
+            Uses extracted body and hand movement features
+            to classify selected CPR movement patterns.
+            Final selection depends on validation performance
+            and computational requirements.
         </div>
 
-        <div class="gbc-text">
-            Supervised Machine Learning – Ensemble Learning
-        </div>
+        <br>
 
-        <div class="gbc-heading">
-            PURPOSE
+        <div class="card-label">
+            MLFLOW EXPERIMENT TRACKING: NOT CONNECTED
         </div>
-
-        <div class="gbc-text">
-            Classify selected CPR movement patterns as
-            proper or improper using extracted movement
-            features from MediaPipe Pose and MediaPipe Hand.
-        </div>
-
-        <div class="gbc-heading">
-            MODEL STATUS
-        </div>
-
-        <div class="gbc-text">
-            Pending dataset preparation, model training,
-            validation, and computational testing.
-        </div>
-
     </div>
     """, unsafe_allow_html=True)
 
 
-# ==================================================
-# EVALUATION METRICS
-# ==================================================
+# ==========================================
+# PLANNED EVALUATION METRICS
+# ==========================================
 
 st.markdown(
-    '<div class="section-title">Planned Evaluation Metrics</div>',
+    '<div class="section-label">Planned Evaluation Metrics</div>',
     unsafe_allow_html=True
 )
 
@@ -600,32 +616,9 @@ with m4:
     st.metric("F1-Score", "Pending")
 
 
-# ==================================================
-# MLFLOW STATUS
-# ==================================================
-
-st.markdown("""
-<div class="panel">
-    <div class="card-label">
-        EXPERIMENT TRACKING
-    </div>
-
-    <div class="card-title">
-        MLflow Integration
-    </div>
-
-    <div class="card-description">
-        Hosted MLflow tracking will record model parameters,
-        experiment runs, evaluation metrics, and model artifacts
-        after the tracking service is configured.
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-
-# ==================================================
+# ==========================================
 # FOOTER
-# ==================================================
+# ==========================================
 
 st.markdown("""
 <div class="footer">
