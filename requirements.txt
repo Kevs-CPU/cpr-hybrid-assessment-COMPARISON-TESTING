@@ -1,0 +1,4 @@
+Add Streamlit dependencies
+
+streamlit
+pandas
