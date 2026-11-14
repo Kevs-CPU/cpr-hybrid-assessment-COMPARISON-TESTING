@@ -32,28 +32,34 @@ TRACKING_URI = (
 # STYLE
 # =====================================================
 
-st.markdown("""
+STYLE = """
 <style>
 
-@import url(
-'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap'
-);
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap');
 
-/* PAGE: allow scrolling instead of clipping content */
+:root {
+    /* Space used by everything ABOVE the dashboard grid
+       (header row, status row, paddings).
+       Bottom cut off?  -> increase this value.
+       Empty gap at the bottom? -> decrease this value. */
+    --reserved: 190px;
+}
+
+/* =====================================================
+   PAGE: locked to the screen. The page itself never scrolls.
+   ===================================================== */
 html, body {
-    min-height: 100%;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
+    height: 100%;
+    overflow: hidden !important;
     font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
 }
 
 .stApp,
 [data-testid="stAppViewContainer"],
 [data-testid="stMain"] {
-    min-height: 100vh;
-    height: auto !important;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
     font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
 }
 
@@ -92,7 +98,15 @@ footer {
 
 .block-container {
     max-width: 1500px;
-    padding: .8rem 2rem 1rem !important;
+    padding: .6rem 1.5rem .3rem !important;
+}
+
+[data-testid="stVerticalBlock"] {
+    gap: .4rem;
+}
+
+[data-testid="stHorizontalBlock"] {
+    align-items: center;
 }
 
 /* TEXT */
@@ -105,20 +119,19 @@ footer {
     color: #ffffff;
 }
 
-[data-testid="stVerticalBlock"] {
-    gap: .55rem;
-}
-
-/* HEADER */
+/* =====================================================
+   HEADER
+   ===================================================== */
 .eyebrow {
-    font-size: .72rem;
+    font-size: .68rem;
     font-weight: 700;
     color: rgba(255,255,255,.78) !important;
     letter-spacing: 1px;
+    margin-bottom: 3px;
 }
 
 .title {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 800;
     letter-spacing: -.03em;
     line-height: 1.2;
@@ -126,30 +139,40 @@ footer {
 }
 
 .sub {
-    font-size: .8rem;
+    font-size: .78rem;
     color: rgba(255,255,255,.78) !important;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
-/* UPLOADER */
+/* UPLOADER (compact) */
 [data-testid="stFileUploader"] {
     background: rgba(13,17,23,.58) !important;
     border: 1px solid rgba(255,255,255,.22) !important;
     border-radius: 12px !important;
-    padding: 8px !important;
+    padding: 6px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
     background: rgba(13,17,23,.52) !important;
     border: 1.5px dashed rgba(255,255,255,.42) !important;
     border-radius: 10px !important;
-    padding: .5rem !important;
+    padding: .3rem .6rem !important;
+    min-height: 0 !important;
+}
+
+[data-testid="stFileUploaderDropzoneInstructions"] small {
+    display: none !important;
 }
 
 [data-testid="stFileUploader"] p,
 [data-testid="stFileUploader"] span,
 [data-testid="stFileUploader"] small {
     color: #ffffff !important;
+}
+
+[data-testid="stFileUploaderFile"] {
+    padding: 0 3px !important;
+    min-height: 0 !important;
 }
 
 /* UPLOAD BUTTON */
@@ -171,13 +194,89 @@ footer {
     background: #dceafa !important;
 }
 
-[data-testid="stFileUploaderFile"] {
-    padding: 3px !important;
+/* BUTTONS (fixed)
+   The global ".stApp p / .stApp span" rules turn the label inside
+   a button white, which is invisible on a white button. The label
+   color is forced on the button AND its children. */
+.stButton button,
+.stButton button:focus,
+.stButton button:active,
+[data-testid="stPopover"] button,
+[data-testid="stPopoverButton"] {
+    background: #ffffff !important;
+    border: 1px solid rgba(255,255,255,.8) !important;
+    border-radius: 9px !important;
+    font-weight: 800 !important;
+    min-height: 34px;
+    box-shadow: none !important;
 }
 
-/* SYSTEM SELECTOR */
+.stButton button,
+.stButton button *,
+.stButton button p,
+.stButton button span,
+.stButton button div,
+[data-testid="stPopover"] button,
+[data-testid="stPopover"] button *,
+[data-testid="stPopoverButton"],
+[data-testid="stPopoverButton"] * {
+    color: #172333 !important;
+}
+
+.stButton button:hover,
+.stButton button:focus-visible,
+[data-testid="stPopover"] button:hover {
+    background: #dceafa !important;
+    border-color: #dceafa !important;
+}
+
+.stButton button:active {
+    background: #c3d9f5 !important;
+}
+
+.stButton button:disabled {
+    opacity: .55;
+}
+
+/* Dataset popover: wide enough to show the table */
+[data-testid="stPopoverBody"] {
+    min-width: min(760px, 92vw);
+    max-height: 70vh;
+}
+
+/* MLFLOW STATUS (compact, replaces the big alert boxes) */
+.mini {
+    font-size: .68rem;
+    line-height: 1.3;
+    margin-top: 2px;
+    padding: 4px 9px;
+    border-radius: 8px;
+    background: rgba(13,17,23,.55);
+    border: 1px solid rgba(255,255,255,.22);
+    color: rgba(255,255,255,.78) !important;
+}
+
+.mini.ok {
+    border-color: #5be39a;
+    color: #b9ffd9 !important;
+}
+
+.mini.bad {
+    border-color: #ff8a80;
+    color: #ffd0cc !important;
+}
+
+.mini a {
+    color: #a9d4fa !important;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+/* =====================================================
+   STATUS ROW: pills + system selector
+   ===================================================== */
 [data-testid="stRadio"] [role="radiogroup"] {
-    gap: .35rem;
+    gap: .3rem;
     justify-content: flex-end;
     flex-wrap: wrap;
 }
@@ -186,14 +285,15 @@ footer {
     background: rgba(13,17,23,.55);
     border: 1px solid rgba(255,255,255,.25);
     border-radius: 999px;
-    padding: 3px 12px;
+    padding: 2px 11px;
     margin: 0;
 }
 
 [data-testid="stRadio"] label p {
     color: #ffffff !important;
-    font-size: .77rem;
+    font-size: .75rem;
     font-weight: 600;
+    margin: 0;
 }
 
 [data-testid="stRadio"] label:has(input:checked) {
@@ -205,17 +305,16 @@ footer {
     font-weight: 800;
 }
 
-/* STATUS PILLS */
 .pills {
     display: flex;
-    gap: .4rem;
+    gap: .35rem;
     flex-wrap: wrap;
     align-items: center;
 }
 
 .pill {
-    font-size: .75rem;
-    padding: 4px 11px;
+    font-size: .72rem;
+    padding: 3px 10px;
     border-radius: 999px;
     background: rgba(13,17,23,.55);
     border: 1px solid rgba(255,255,255,.22);
@@ -231,7 +330,39 @@ footer {
     color: #ffd0cc !important;
 }
 
-/* KPI CARDS */
+/* =====================================================
+   DASHBOARD GRID: KPI row + 3 columns + legal line.
+   Height = screen height minus the header area.
+   ===================================================== */
+.dash {
+    height: calc(100vh - var(--reserved));
+    height: calc(100dvh - var(--reserved));
+    min-height: 330px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.panels {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 8px;
+    min-height: 0;
+}
+
+.col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+}
+
 .card, .panel {
     background: rgba(13,17,23,.62);
     backdrop-filter: blur(14px);
@@ -240,13 +371,13 @@ footer {
     border-radius: 14px;
 }
 
+/* KPI CARDS */
 .kpi {
-    padding: 11px 14px;
-    min-height: 84px;
+    padding: 8px 12px;
 }
 
 .kpi .v {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     font-weight: 800;
     line-height: 1.15;
     color: #ffffff !important;
@@ -254,39 +385,46 @@ footer {
 
 .kpi .v.pending {
     color: rgba(255,255,255,.58) !important;
-    font-size: 1.35rem;
-    padding-top: 5px;
+    font-size: 1.2rem;
+    padding-top: 3px;
 }
 
 .kpi .l {
-    font-size: .78rem;
+    font-size: .75rem;
     font-weight: 700;
     color: #ffffff !important;
 }
 
 .kpi .s {
-    font-size: .68rem;
+    font-size: .64rem;
     color: rgba(255,255,255,.67) !important;
     overflow-wrap: anywhere;
 }
 
 /* PANELS */
 .panel {
-    padding: 13px 15px;
-    min-height: 280px;
-    height: auto;
-    overflow: visible;
+    padding: 10px 12px;
+    min-height: 0;
+    flex: 0 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,.3) transparent;
+}
+
+.panel.grow {
+    flex: 1 1 0;
 }
 
 .ptitle {
-    font-size: .96rem;
+    font-size: .92rem;
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 7px;
     color: #ffffff !important;
 }
 
 .ptitle span {
-    font-size: .69rem;
+    font-size: .67rem;
     font-weight: 400;
     color: rgba(255,255,255,.65) !important;
     margin-left: 7px;
@@ -294,15 +432,15 @@ footer {
 
 .empty {
     color: rgba(255,255,255,.65) !important;
-    font-size: .82rem;
-    padding-top: 35px;
+    font-size: .8rem;
+    padding-top: 24px;
     text-align: center;
 }
 
 /* COMPARISON BARS */
 .sys {
-    padding: 7px 9px;
-    margin-bottom: 7px;
+    padding: 5px 8px;
+    margin-bottom: 5px;
     border-radius: 10px;
     border: 1px solid transparent;
 }
@@ -315,8 +453,8 @@ footer {
 .sh {
     display: flex;
     justify-content: space-between;
-    font-size: .82rem;
-    margin-bottom: 4px;
+    font-size: .8rem;
+    margin-bottom: 3px;
     gap: 5px;
 }
 
@@ -326,19 +464,19 @@ footer {
 
 .sh span {
     color: rgba(255,255,255,.65) !important;
-    font-size: .7rem;
+    font-size: .68rem;
 }
 
 .brow {
     display: grid;
-    grid-template-columns: 62px 1fr 48px;
+    grid-template-columns: 58px 1fr 44px;
     align-items: center;
     gap: 8px;
-    height: 17px;
+    height: 14px;
 }
 
 .bl, .bv {
-    font-size: .69rem;
+    font-size: .66rem;
     color: rgba(255,255,255,.85) !important;
 }
 
@@ -348,7 +486,7 @@ footer {
 }
 
 .track {
-    height: 7px;
+    height: 6px;
     border-radius: 99px;
     background: rgba(255,255,255,.12);
     overflow: hidden;
@@ -372,7 +510,7 @@ footer {
 }
 
 .cm-h {
-    font-size: .69rem;
+    font-size: .67rem;
     color: rgba(255,255,255,.8) !important;
     text-align: center;
     align-self: center;
@@ -380,7 +518,7 @@ footer {
 }
 
 .cm-c {
-    min-height: 38px;
+    min-height: 34px;
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -391,16 +529,25 @@ footer {
 }
 
 .note {
-    font-size: .69rem;
+    font-size: .66rem;
     color: rgba(255,255,255,.65) !important;
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
-/* FRAMEWORK */
+/* RESEARCH FRAMEWORK */
+.panel.fwp {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
 .fw {
-    padding: 8px 10px;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 7px 10px;
     border-radius: 10px;
-    margin-bottom: 7px;
     background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.12);
 }
@@ -411,27 +558,24 @@ footer {
 }
 
 .fw b {
-    font-size: .82rem;
+    font-size: .8rem;
     color: #ffffff !important;
 }
 
 .fw div {
-    font-size: .7rem;
+    font-size: .69rem;
     color: rgba(255,255,255,.77) !important;
     line-height: 1.4;
 }
 
 /* GBC DETAILS */
-.gbc-box {
+.panel.gbc {
     background: rgba(23,48,78,.80);
     border: 1px solid rgba(135,185,240,.38);
-    border-radius: 11px;
-    padding: 11px;
-    margin-top: 8px;
 }
 
 .gbc-title {
-    font-size: .92rem;
+    font-size: .9rem;
     font-weight: 800;
     color: #ffffff !important;
     line-height: 1.35;
@@ -439,99 +583,71 @@ footer {
 
 .gbc-heading {
     color: #a9d4fa !important;
-    font-size: .64rem;
+    font-size: .62rem;
     letter-spacing: .9px;
     font-weight: 800;
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
 .gbc-text {
-    font-size: .72rem;
+    font-size: .7rem;
     color: #ffffff !important;
-    line-height: 1.45;
+    line-height: 1.4;
 }
 
-/* BUTTONS (FIXED)
-   The global ".stApp p / .stApp span" rules turn the label inside
-   st.button white, which is invisible on a white button. The label
-   color must therefore be forced on the button AND its children. */
-.stButton button,
-.stButton button:focus,
-.stButton button:active {
-    background: #ffffff !important;
-    border: 1px solid rgba(255,255,255,.8) !important;
-    border-radius: 9px !important;
-    font-weight: 800 !important;
-    min-height: 38px;
-    box-shadow: none !important;
-}
-
-.stButton button,
-.stButton button *,
-.stButton button p,
-.stButton button span,
-.stButton button div {
-    color: #172333 !important;
-}
-
-.stButton button:hover,
-.stButton button:focus-visible {
-    background: #dceafa !important;
-    border-color: #dceafa !important;
-}
-
-.stButton button:active {
-    background: #c3d9f5 !important;
-}
-
-.stButton button:disabled {
-    opacity: .55;
-}
-
-/* ALERT + CODE BOXES (readable on the dark dashboard) */
-[data-testid="stAlert"] {
-    background: rgba(13,17,23,.75) !important;
-    border: 1px solid rgba(255,255,255,.25) !important;
-}
-
-[data-testid="stCode"],
-[data-testid="stCode"] pre {
-    background: rgba(13,17,23,.75) !important;
-}
-
-[data-testid="stCode"] * {
-    color: #ffffff !important;
-}
-
-/* FOOTER */
-.foot {
-    font-size: .67rem;
+/* LEGAL LINE */
+.legal {
+    font-size: .62rem;
+    line-height: 1.3;
     color: rgba(255,255,255,.56) !important;
-    margin-top: 9px;
 }
 
-@media (max-height: 760px) {
-    .title { font-size: 1.45rem; }
-    .kpi { min-height: 72px; padding: 7px 11px; }
-    .kpi .v { font-size: 1.4rem; }
+/* =====================================================
+   SMALL SCREENS
+   ===================================================== */
+@media (max-height: 780px) {
+    .title { font-size: 1.35rem; }
+    .kpi { padding: 6px 10px; }
+    .kpi .v { font-size: 1.3rem; }
+    .cm-c { min-height: 28px; }
 }
 
-@media (max-width: 900px) {
+/* Phones / very small windows cannot fit everything on one screen,
+   so only here the page is allowed to scroll. */
+@media (max-width: 900px), (max-height: 540px) {
+    html, body,
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stMain"] {
+        height: auto !important;
+        overflow-y: auto !important;
+    }
+
     .block-container {
         padding: 1rem !important;
     }
 
-    .panel {
-        min-height: 200px;
+    .dash {
+        height: auto;
     }
 
-    .title {
-        font-size: 1.35rem;
+    .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .panels {
+        grid-template-columns: 1fr;
+    }
+
+    .panel {
+        overflow: visible;
     }
 }
 
 </style>
-""", unsafe_allow_html=True)
+"""
+
+st.markdown(STYLE, unsafe_allow_html=True)
 
 
 # =====================================================
@@ -544,6 +660,24 @@ def esc(value):
 
 def pct(value):
     return f"{value * 100:.1f}%"
+
+
+def render(markup):
+    """Render raw HTML safely.
+
+    Markdown treats any line indented by 4+ spaces that follows a
+    blank line as a CODE BLOCK, which made raw HTML appear as text
+    on the dashboard. Removing indentation and blank lines before
+    rendering prevents that.
+    """
+
+    compact = " ".join(
+        line.strip()
+        for line in markup.splitlines()
+        if line.strip()
+    )
+
+    st.markdown(compact, unsafe_allow_html=True)
 
 
 def evaluate(data):
@@ -703,6 +837,184 @@ def confusion(matrix):
     """
 
 
+def mlflow_status_html():
+    """Compact one-line MLflow connection status."""
+
+    status = st.session_state.get("mlflow_status")
+
+    if status == "connected":
+
+        run_id = st.session_state.get("mlflow_run_id", "")
+
+        return (
+            '<div class="mini ok">'
+            f'✓ Connected · Run {esc(run_id[:8])}… '
+            f'<a href="{TRACKING_URI}" target="_blank" '
+            'rel="noopener">Open DagsHub</a>'
+            '</div>'
+        )
+
+    if status == "failed":
+
+        error = st.session_state.get("mlflow_error", "Unknown error")
+
+        return (
+            '<div class="mini bad">'
+            f'✕ Failed: {esc(error)}. Check secrets, token '
+            'and DagsHub write permission.'
+            '</div>'
+        )
+
+    return '<div class="mini">Connection not tested yet.</div>'
+
+
+def dashboard_html(results, view, cur):
+    """KPI row, three panels and legal line as ONE grid so every
+    block lines up and the whole layout fits the screen."""
+
+    subtitle = (
+        f"{view}, macro average"
+        if cur else
+        "Waiting for experimental data"
+    )
+
+    cards = [
+        ("Accuracy", pct(cur["acc"]) if cur else None),
+        ("Precision", pct(cur["prec"]) if cur else None),
+        ("Recall", pct(cur["rec"]) if cur else None),
+        ("F1-score", pct(cur["f1"]) if cur else None),
+        ("Records evaluated", str(cur["n"]) if cur else None)
+    ]
+
+    kpis = "".join(
+        kpi(label, value, subtitle)
+        for label, value in cards
+    )
+
+    comparison_body = (
+        comparison(results, view)
+        if cur else
+        '<div class="empty">'
+        'System comparison will appear after a valid CSV is uploaded.'
+        '</div>'
+    )
+
+    confusion_body = (
+        confusion(cur["cm"])
+        if cur else
+        '<div class="empty">'
+        'Confusion matrix will appear after a valid CSV is uploaded.'
+        '</div>'
+    )
+
+    view_tag = f"<span>{esc(view)}</span>" if cur else ""
+
+    data_note = (
+        " Metrics are computed from the uploaded predictions "
+        "and evaluator-approved actual labels."
+        if cur else ""
+    )
+
+    return f"""
+    <div class="dash">
+
+        <div class="kpis">
+            {kpis}
+        </div>
+
+        <div class="panels">
+
+            <div class="col">
+                <div class="panel grow">
+                    <div class="ptitle">
+                        System Comparison
+                        <span>Higher is better</span>
+                    </div>
+                    {comparison_body}
+                </div>
+            </div>
+
+            <div class="col">
+
+                <div class="panel">
+                    <div class="ptitle">
+                        Confusion Matrix
+                        {view_tag}
+                    </div>
+                    {confusion_body}
+                </div>
+
+                <div class="panel grow gbc">
+                    <div class="gbc-title">
+                        Gradient Boosting Classifier (GBC)
+                    </div>
+
+                    <div class="gbc-heading">ALGORITHM TYPE</div>
+                    <div class="gbc-text">
+                        Supervised Machine Learning – Ensemble Learning
+                    </div>
+
+                    <div class="gbc-heading">PURPOSE</div>
+                    <div class="gbc-text">
+                        Classify selected CPR movement patterns as
+                        proper or improper using extracted movement
+                        features from MediaPipe Pose and MediaPipe Hand.
+                    </div>
+
+                    <div class="gbc-heading">MODEL STATUS</div>
+                    <div class="gbc-text">
+                        Provisional. Pending dataset preparation,
+                        training, validation and computational testing.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col">
+                <div class="panel grow fwp">
+                    <div class="ptitle">Research Framework</div>
+
+                    <div class="fw">
+                        <b>Ecker et al. (2024)</b>
+                        <div>
+                            Existing system. MediaPipe Pose landmark
+                            analysis and CPR measurement evaluation.
+                        </div>
+                    </div>
+
+                    <div class="fw">
+                        <b>SmartCPR (2024)</b>
+                        <div>
+                            Existing system. MoveNet smartphone CPR
+                            assessment with measurement analysis
+                            and feedback.
+                        </div>
+                    </div>
+
+                    <div class="fw new">
+                        <b>Hybrid CPR System</b>
+                        <div>
+                            Proposed. MediaPipe Pose and Hand,
+                            Machine Learning, Rule-Based Assessment
+                            and Hybrid Decision Engine.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="legal">
+            NEMSU Lianga Campus | CPR Research Project | 2026.
+            Supplementary CPR research and training tool.
+            Not a replacement for qualified CPR instructors,
+            instrumented manikins, or official CPR guidelines.{data_note}
+        </div>
+
+    </div>
+    """
+
+
 # =====================================================
 # MLFLOW CONNECTION
 # =====================================================
@@ -801,17 +1113,17 @@ def test_mlflow_connection():
 
 
 # =====================================================
-# HEADER + CSV + MLFLOW BUTTON
+# ROW 1: HEADER + CSV UPLOAD + MLFLOW BUTTON
 # =====================================================
 
 head, upload_col, mlflow_col = st.columns(
-    [1.55, 1, .8],
+    [1.5, 1.05, .85],
     gap="medium"
 )
 
 with head:
 
-    st.markdown("""
+    render("""
     <div class="eyebrow">
         NORTH EASTERN MINDANAO STATE UNIVERSITY,
         LIANGA CAMPUS
@@ -825,25 +1137,27 @@ with head:
         Comparative research and experimental dashboard
         for BS Computer Science
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
 
 with upload_col:
 
+    render("""
+    <div class="eyebrow">EXPERIMENTAL PREDICTIONS CSV</div>
+    """)
+
     uploaded = st.file_uploader(
         "Experimental predictions CSV",
         type=["csv"],
-        help="Upload evaluator-validated experimental predictions."
+        label_visibility="collapsed"
     )
 
 
 with mlflow_col:
 
-    st.markdown("""
-    <div class="eyebrow">
-        HOSTED EXPERIMENT TRACKING
-    </div>
-    """, unsafe_allow_html=True)
+    render("""
+    <div class="eyebrow">HOSTED EXPERIMENT TRACKING</div>
+    """)
 
     test_button = st.button(
         "Test MLflow Connection",
@@ -871,45 +1185,7 @@ with mlflow_col:
                 )
                 st.session_state.pop("mlflow_run_id", None)
 
-
-# Connection feedback
-if st.session_state.get("mlflow_status") == "connected":
-
-    st.success(
-        "DagsHub MLflow connection successful!"
-    )
-
-    st.code(
-        "Connection-check Run ID: "
-        + st.session_state["mlflow_run_id"]
-    )
-
-    st.markdown(
-        "[Open DagsHub MLflow Tracking UI]"
-        "(https://dagshub.com/Kevs-CPU/"
-        "cpr-hybrid-assessment-COMPARISON-TESTING.mlflow)"
-    )
-
-elif st.session_state.get("mlflow_status") == "failed":
-
-    st.error(
-        "MLflow connection failed: "
-        + st.session_state.get("mlflow_error", "Unknown error")
-    )
-
-    st.caption(
-        "Check Streamlit Secrets, tracking URI, token, "
-        "and DagsHub repository write permissions."
-    )
-
-else:
-
-    st.caption(
-        "MLflow connection has not been tested."
-    )
-
-
-st.divider()
+    render(mlflow_status_html())
 
 
 # =====================================================
@@ -1108,13 +1384,19 @@ if df is not None:
         )
 
 
+# Validation problems are shown as a compact pill instead of a
+# large alert box, so they never push the layout off the screen.
 if validation_message:
 
-    st.error(validation_message)
+    pills = (
+        '<span class="pill bad">'
+        f'✕ {esc(validation_message)}'
+        '</span>'
+    )
 
 
 # =====================================================
-# SYSTEM SELECTOR
+# ROW 2: DATASET BUTTON + STATUS PILLS + SYSTEM SELECTOR
 # =====================================================
 
 view = None
@@ -1137,17 +1419,27 @@ if df is not None:
         if hybrid else 0
     )
 
-    status_col, switch_col = st.columns(
-        [1.5, 1],
-        gap="medium"
+    data_col, status_col, switch_col = st.columns(
+        [.5, 1.6, 1.5],
+        gap="small"
     )
+
+    with data_col:
+
+        # Opens as an overlay, so the page does not get taller.
+        with st.popover(
+            "📄 View dataset",
+            use_container_width=True
+        ):
+
+            st.dataframe(
+                df,
+                use_container_width=True
+            )
 
     with status_col:
 
-        st.markdown(
-            f'<div class="pills">{pills}</div>',
-            unsafe_allow_html=True
-        )
+        render(f'<div class="pills">{pills}</div>')
 
     with switch_col:
 
@@ -1163,212 +1455,11 @@ if df is not None:
 
 else:
 
-    st.markdown(
-        f'<div class="pills">{pills}</div>',
-        unsafe_allow_html=True
-    )
-
-st.divider()
+    render(f'<div class="pills">{pills}</div>')
 
 
 # =====================================================
-# KPI ROW
+# DASHBOARD: KPI + PANELS + LEGAL (one screen, no scrolling)
 # =====================================================
 
-subtitle = (
-    f"{esc(view)}, macro average"
-    if cur else
-    "Waiting for experimental data"
-)
-
-cards = [
-    ("Accuracy", pct(cur["acc"]) if cur else None),
-    ("Precision", pct(cur["prec"]) if cur else None),
-    ("Recall", pct(cur["rec"]) if cur else None),
-    ("F1-score", pct(cur["f1"]) if cur else None),
-    ("Records evaluated", str(cur["n"]) if cur else None)
-]
-
-columns = st.columns(5, gap="small")
-
-for column, (label, value) in zip(columns, cards):
-
-    with column:
-
-        st.markdown(
-            kpi(
-                label,
-                value,
-                subtitle
-            ),
-            unsafe_allow_html=True
-        )
-
-
-st.divider()
-
-
-# =====================================================
-# MAIN DASHBOARD PANELS
-# =====================================================
-
-c1, c2, c3 = st.columns(
-    [1.35, 1, 1.05],
-    gap="small"
-)
-
-
-# SYSTEM COMPARISON
-with c1:
-
-    body = (
-        comparison(results, view)
-        if cur else
-        '<div class="empty">'
-        'System comparison will appear after a valid CSV is uploaded.'
-        '</div>'
-    )
-
-    st.markdown(
-        f"""
-        <div class="panel">
-            <div class="ptitle">
-                System Comparison
-                <span>Higher is better</span>
-            </div>
-            {body}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# CONFUSION MATRIX
-with c2:
-
-    body = (
-        confusion(cur["cm"])
-        if cur else
-        '<div class="empty">'
-        'Confusion matrix will appear after a valid CSV is uploaded.'
-        '</div>'
-    )
-
-    st.markdown(
-        f"""
-        <div class="panel">
-            <div class="ptitle">
-                Confusion Matrix
-                <span>{esc(view) if cur else ""}</span>
-            </div>
-            {body}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-# RESEARCH FRAMEWORK + GBC DETAILS
-with c3:
-
-    st.markdown("""
-    <div class="panel">
-
-        <div class="ptitle">
-            Research Framework
-        </div>
-
-        <div class="fw">
-            <b>Ecker et al. (2024)</b>
-            <div>
-                Existing system. MediaPipe Pose landmark analysis
-                and CPR measurement evaluation.
-            </div>
-        </div>
-
-        <div class="fw">
-            <b>SmartCPR (2024)</b>
-            <div>
-                Existing system. MoveNet smartphone CPR assessment
-                with measurement analysis and feedback.
-            </div>
-        </div>
-
-        <div class="fw new">
-            <b>Hybrid CPR System</b>
-            <div>
-                Proposed. MediaPipe Pose and Hand, Machine Learning,
-                Rule-Based Assessment and Hybrid Decision Engine.
-            </div>
-        </div>
-
-        <div class="gbc-box">
-
-            <div class="gbc-title">
-                Gradient Boosting Classifier (GBC)
-            </div>
-
-            <div class="gbc-heading">
-                ALGORITHM TYPE
-            </div>
-
-            <div class="gbc-text">
-                Supervised Machine Learning – Ensemble Learning
-            </div>
-
-            <div class="gbc-heading">
-                PURPOSE
-            </div>
-
-            <div class="gbc-text">
-                Classify selected CPR movement patterns as
-                proper or improper using extracted movement
-                features from MediaPipe Pose and MediaPipe Hand.
-            </div>
-
-            <div class="gbc-heading">
-                MODEL STATUS
-            </div>
-
-            <div class="gbc-text">
-                Provisional. Pending dataset preparation,
-                training, validation and computational testing.
-            </div>
-
-        </div>
-
-        <div class="foot">
-            NEMSU Lianga Campus | CPR Research Project | 2026
-        </div>
-
-    </div>
-    """, unsafe_allow_html=True)
-
-
-# =====================================================
-# DATASET VALIDATION INFORMATION
-# =====================================================
-
-if df is not None:
-
-    st.divider()
-
-    with st.expander("View validated experimental dataset"):
-
-        st.dataframe(
-            df,
-            use_container_width=True
-        )
-
-        st.caption(
-            "These metrics are computed from the uploaded "
-            "predictions and evaluator-approved actual labels."
-        )
-
-st.divider()
-
-st.caption(
-    "Supplementary CPR research and training tool. "
-    "Not a replacement for qualified CPR instructors, "
-    "instrumented manikins, or official CPR guidelines."
-)
+render(dashboard_html(results, view, cur))
