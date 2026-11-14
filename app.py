@@ -1,6 +1,3 @@
-Create initial CPR research dashboard
-
-
 import streamlit as st
 import pandas as pd
 
