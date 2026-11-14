@@ -1,7 +1,6 @@
 
 import os
 import html
-
 import pandas as pd
 import streamlit as st
 
@@ -24,13 +23,8 @@ REQUIRED = [
     "predicted_label"
 ]
 
-TRACKING_URI = (
-    "https://dagshub.com/Kevs-CPU/"
-    "cpr-hybrid-assessment-COMPARISON-TESTING.mlflow"
-)
-
 # =====================================================
-# STYLE
+# CSS: SINGLE-SCREEN DASHBOARD
 # =====================================================
 
 st.markdown("""
@@ -40,25 +34,32 @@ st.markdown("""
 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap'
 );
 
-/* PAGE: allow scrolling instead of clipping content */
-html, body {
-    min-height: 100%;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
+/* ==========================================
+   NO PAGE SCROLLING
+========================================== */
+
+html, body, #root {
+    height: 100% !important;
+    overflow: hidden !important;
 }
 
-.stApp,
 [data-testid="stAppViewContainer"],
-[data-testid="stMain"] {
-    min-height: 100vh;
-    height: auto !important;
-    overflow-x: hidden !important;
-    overflow-y: visible !important;
+[data-testid="stMain"],
+section.main {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+}
+
+.block-container {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+    max-width: 1550px;
+    padding: .45rem 1.5rem .3rem !important;
     font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
 }
 
-/* BACKGROUND */
 .stApp {
     color: #ffffff !important;
     background:
@@ -82,6 +83,7 @@ html, body {
         #6d4fa3 72%,
         #1f8cf2 100%
       );
+    font-family: 'DM Sans', 'Segoe UI', sans-serif !important;
 }
 
 [data-testid="stHeader"],
@@ -91,60 +93,90 @@ footer {
     display: none !important;
 }
 
-.block-container {
-    max-width: 1500px;
-    padding: .8rem 2rem 1rem !important;
-}
-
-/* TEXT */
-.stApp h1,
-.stApp h2,
-.stApp h3,
-.stApp p,
-.stApp label,
-.stApp span {
-    color: #ffffff;
-}
-
 [data-testid="stVerticalBlock"] {
-    gap: .55rem;
+    gap: .38rem;
 }
 
-/* HEADER */
+[data-testid="stElementContainer"] {
+    margin: 0 !important;
+}
+
+/* ==========================================
+   HEADER
+========================================== */
+
 .eyebrow {
-    font-size: .72rem;
+    font-size: .68rem;
     font-weight: 700;
     color: rgba(255,255,255,.78) !important;
     letter-spacing: 1px;
 }
 
 .title {
-    font-size: 1.7rem;
+    font-size: 1.55rem;
     font-weight: 800;
     letter-spacing: -.03em;
-    line-height: 1.2;
+    line-height: 1.16;
     color: #ffffff !important;
 }
 
 .sub {
-    font-size: .8rem;
+    font-size: .75rem;
     color: rgba(255,255,255,.78) !important;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
-/* UPLOADER */
+/* ==========================================
+   BUTTON VISIBILITY
+========================================== */
+
+[data-testid="stButton"] button,
+.stButton button {
+    background: #ffffff !important;
+    color: #0d1117 !important;
+    border: 1px solid #ffffff !important;
+    border-radius: 9px !important;
+    font-weight: 800 !important;
+    font-size: .75rem !important;
+    min-height: 38px !important;
+    padding: 5px 9px !important;
+    white-space: normal !important;
+}
+
+[data-testid="stButton"] button *,
+.stButton button span,
+.stButton button p {
+    color: #0d1117 !important;
+}
+
+[data-testid="stButton"] button:hover,
+.stButton button:hover {
+    background: #dceafa !important;
+    color: #0d1117 !important;
+    border-color: #dceafa !important;
+}
+
+[data-testid="stButton"] button:focus {
+    box-shadow: 0 0 0 2px rgba(255,255,255,.4) !important;
+}
+
+/* ==========================================
+   CSV UPLOADER
+========================================== */
+
 [data-testid="stFileUploader"] {
     background: rgba(13,17,23,.58) !important;
     border: 1px solid rgba(255,255,255,.22) !important;
-    border-radius: 12px !important;
-    padding: 8px !important;
+    border-radius: 11px !important;
+    padding: 5px !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
     background: rgba(13,17,23,.52) !important;
-    border: 1.5px dashed rgba(255,255,255,.42) !important;
-    border-radius: 10px !important;
-    padding: .5rem !important;
+    border: 1px dashed rgba(255,255,255,.45) !important;
+    border-radius: 9px !important;
+    padding: 5px !important;
+    min-height: 50px !important;
 }
 
 [data-testid="stFileUploader"] p,
@@ -153,7 +185,6 @@ footer {
     color: #ffffff !important;
 }
 
-/* UPLOAD BUTTON */
 [data-testid="stFileUploaderDropzone"] button {
     background: #ffffff !important;
     border: 1px solid #ffffff !important;
@@ -161,7 +192,6 @@ footer {
     font-weight: 800 !important;
 }
 
-[data-testid="stFileUploaderDropzone"] button,
 [data-testid="stFileUploaderDropzone"] button *,
 [data-testid="stFileUploaderDropzone"] button span,
 [data-testid="stFileUploaderDropzone"] button p {
@@ -173,53 +203,30 @@ footer {
 }
 
 [data-testid="stFileUploaderFile"] {
-    padding: 3px !important;
+    padding: 0 !important;
 }
 
-/* SYSTEM SELECTOR */
-[data-testid="stRadio"] [role="radiogroup"] {
-    gap: .35rem;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-}
+/* ==========================================
+   STATUS PILLS
+========================================== */
 
-[data-testid="stRadio"] label {
-    background: rgba(13,17,23,.55);
-    border: 1px solid rgba(255,255,255,.25);
-    border-radius: 999px;
-    padding: 3px 12px;
-    margin: 0;
-}
-
-[data-testid="stRadio"] label p {
-    color: #ffffff !important;
-    font-size: .77rem;
-    font-weight: 600;
-}
-
-[data-testid="stRadio"] label:has(input:checked) {
-    background: #ffffff;
-}
-
-[data-testid="stRadio"] label:has(input:checked) p {
-    color: #0d1117 !important;
-    font-weight: 800;
-}
-
-/* STATUS PILLS */
 .pills {
     display: flex;
-    gap: .4rem;
-    flex-wrap: wrap;
+    gap: .35rem;
+    flex-wrap: nowrap;
     align-items: center;
+    overflow: hidden;
+    min-height: 27px;
 }
 
 .pill {
-    font-size: .75rem;
-    padding: 4px 11px;
+    font-size: .68rem;
+    padding: 4px 9px;
     border-radius: 999px;
+    white-space: nowrap;
     background: rgba(13,17,23,.55);
     border: 1px solid rgba(255,255,255,.22);
+    color: #ffffff !important;
 }
 
 .pill.ok {
@@ -232,79 +239,124 @@ footer {
     color: #ffd0cc !important;
 }
 
-/* KPI CARDS */
+/* ==========================================
+   SYSTEM SELECTOR
+========================================== */
+
+[data-testid="stRadio"] [role="radiogroup"] {
+    gap: .25rem;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+}
+
+[data-testid="stRadio"] label {
+    background: rgba(13,17,23,.55);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 999px;
+    padding: 1px 9px;
+    margin: 0;
+}
+
+[data-testid="stRadio"] label p {
+    color: #ffffff !important;
+    font-size: .68rem;
+    font-weight: 600;
+}
+
+[data-testid="stRadio"] label:has(input:checked) {
+    background: #ffffff;
+}
+
+[data-testid="stRadio"] label:has(input:checked) p {
+    color: #0d1117 !important;
+    font-weight: 800;
+}
+
+/* ==========================================
+   CARDS
+========================================== */
+
 .card, .panel {
     background: rgba(13,17,23,.62);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(255,255,255,.17);
-    border-radius: 14px;
+    border-radius: 13px;
 }
 
 .kpi {
-    padding: 11px 14px;
-    min-height: 84px;
+    padding: 8px 11px;
+    height: 69px;
 }
 
 .kpi .v {
-    font-size: 1.7rem;
+    font-size: 1.5rem;
     font-weight: 800;
-    line-height: 1.15;
+    line-height: 1.1;
     color: #ffffff !important;
 }
 
 .kpi .v.pending {
     color: rgba(255,255,255,.58) !important;
-    font-size: 1.35rem;
-    padding-top: 5px;
+    font-size: 1.2rem;
+    padding-top: 3px;
 }
 
 .kpi .l {
-    font-size: .78rem;
+    font-size: .71rem;
     font-weight: 700;
     color: #ffffff !important;
 }
 
 .kpi .s {
-    font-size: .68rem;
-    color: rgba(255,255,255,.67) !important;
-    overflow-wrap: anywhere;
+    font-size: .62rem;
+    color: rgba(255,255,255,.65) !important;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
-/* PANELS */
+/* ==========================================
+   MAIN PANELS
+========================================== */
+
 .panel {
-    padding: 13px 15px;
-    min-height: 280px;
-    height: auto;
-    overflow: visible;
+    height: 355px;
+    min-height: 355px;
+    max-height: 355px;
+    overflow: hidden;
+    padding: 11px 12px;
 }
 
 .ptitle {
-    font-size: .96rem;
+    font-size: .91rem;
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: #ffffff !important;
 }
 
 .ptitle span {
-    font-size: .69rem;
+    font-size: .65rem;
     font-weight: 400;
     color: rgba(255,255,255,.65) !important;
-    margin-left: 7px;
+    margin-left: 5px;
 }
 
 .empty {
     color: rgba(255,255,255,.65) !important;
-    font-size: .82rem;
-    padding-top: 35px;
+    font-size: .78rem;
+    padding-top: 45px;
     text-align: center;
 }
 
-/* COMPARISON BARS */
+/* ==========================================
+   COMPARISON BARS
+========================================== */
+
 .sys {
-    padding: 7px 9px;
-    margin-bottom: 7px;
-    border-radius: 10px;
+    padding: 6px 8px;
+    margin-bottom: 5px;
+    border-radius: 9px;
     border: 1px solid transparent;
 }
 
@@ -316,30 +368,31 @@ footer {
 .sh {
     display: flex;
     justify-content: space-between;
-    font-size: .82rem;
-    margin-bottom: 4px;
+    font-size: .76rem;
+    margin-bottom: 3px;
     gap: 5px;
 }
 
 .sh b {
+    color: #ffffff !important;
     overflow-wrap: anywhere;
 }
 
 .sh span {
     color: rgba(255,255,255,.65) !important;
-    font-size: .7rem;
+    font-size: .65rem;
 }
 
 .brow {
     display: grid;
-    grid-template-columns: 62px 1fr 48px;
+    grid-template-columns: 58px 1fr 44px;
     align-items: center;
-    gap: 8px;
-    height: 17px;
+    gap: 7px;
+    height: 15px;
 }
 
 .bl, .bv {
-    font-size: .69rem;
+    font-size: .65rem;
     color: rgba(255,255,255,.85) !important;
 }
 
@@ -349,7 +402,7 @@ footer {
 }
 
 .track {
-    height: 7px;
+    height: 6px;
     border-radius: 99px;
     background: rgba(255,255,255,.12);
     overflow: hidden;
@@ -366,14 +419,17 @@ footer {
     );
 }
 
-/* CONFUSION MATRIX */
+/* ==========================================
+   CONFUSION MATRIX
+========================================== */
+
 .cm {
     display: grid;
     gap: 4px;
 }
 
 .cm-h {
-    font-size: .69rem;
+    font-size: .65rem;
     color: rgba(255,255,255,.8) !important;
     text-align: center;
     align-self: center;
@@ -381,27 +437,30 @@ footer {
 }
 
 .cm-c {
-    min-height: 38px;
-    border-radius: 8px;
+    min-height: 34px;
+    border-radius: 7px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 800;
-    font-size: .9rem;
+    font-size: .85rem;
     color: #ffffff !important;
 }
 
 .note {
-    font-size: .69rem;
+    font-size: .65rem;
     color: rgba(255,255,255,.65) !important;
-    margin-top: 8px;
+    margin-top: 7px;
 }
 
-/* FRAMEWORK */
+/* ==========================================
+   RESEARCH FRAMEWORK
+========================================== */
+
 .fw {
-    padding: 8px 10px;
-    border-radius: 10px;
-    margin-bottom: 7px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    margin-bottom: 5px;
     background: rgba(255,255,255,.06);
     border: 1px solid rgba(255,255,255,.12);
 }
@@ -412,86 +471,103 @@ footer {
 }
 
 .fw b {
-    font-size: .82rem;
+    font-size: .75rem;
     color: #ffffff !important;
 }
 
 .fw div {
-    font-size: .7rem;
+    font-size: .64rem;
     color: rgba(255,255,255,.77) !important;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
-/* GBC DETAILS */
+/* ==========================================
+   GBC DETAILS
+========================================== */
+
 .gbc-box {
-    background: rgba(23,48,78,.80);
-    border: 1px solid rgba(135,185,240,.38);
-    border-radius: 11px;
-    padding: 11px;
-    margin-top: 8px;
+    background: rgba(23,48,78,.88);
+    border: 1px solid rgba(135,185,240,.4);
+    border-radius: 9px;
+    padding: 8px;
+    margin-top: 5px;
 }
 
 .gbc-title {
-    font-size: .92rem;
+    font-size: .82rem;
     font-weight: 800;
     color: #ffffff !important;
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
 .gbc-heading {
     color: #a9d4fa !important;
-    font-size: .64rem;
-    letter-spacing: .9px;
+    font-size: .59rem;
+    letter-spacing: .8px;
     font-weight: 800;
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .gbc-text {
-    font-size: .72rem;
+    font-size: .65rem;
     color: #ffffff !important;
-    line-height: 1.45;
+    line-height: 1.3;
 }
 
-/* BUTTONS */
-.stButton button {
-    background: #ffffff !important;
-    color: #172333 !important;
-    border: 1px solid rgba(255,255,255,.8) !important;
-    border-radius: 9px !important;
-    font-weight: 800 !important;
-    min-height: 38px;
+/* ==========================================
+   STATUS FEEDBACK
+========================================== */
+
+.connection-success {
+    color: #b9ffd9 !important;
+    font-size: .7rem;
+    font-weight: 700;
 }
 
-.stButton button:hover {
-    background: #dceafa !important;
-    color: #172333 !important;
-    border-color: #dceafa !important;
+.connection-error {
+    color: #ffd0cc !important;
+    font-size: .7rem;
+    font-weight: 700;
 }
 
 /* FOOTER */
 .foot {
-    font-size: .67rem;
-    color: rgba(255,255,255,.56) !important;
-    margin-top: 9px;
+    font-size: .62rem;
+    color: rgba(255,255,255,.5) !important;
+    margin-top: 5px;
 }
 
+/* ==========================================
+   SHORT DESKTOP SCREENS
+========================================== */
+
 @media (max-height: 760px) {
-    .title { font-size: 1.45rem; }
-    .kpi { min-height: 72px; padding: 7px 11px; }
-    .kpi .v { font-size: 1.4rem; }
+    .title {
+        font-size: 1.3rem;
+    }
+
+    .panel {
+        height: 315px;
+        min-height: 315px;
+        max-height: 315px;
+    }
+
+    .kpi {
+        height: 62px;
+    }
+
+    .kpi .v {
+        font-size: 1.3rem;
+    }
+
+    .block-container {
+        padding-top: .25rem !important;
+    }
 }
 
 @media (max-width: 900px) {
     .block-container {
-        padding: 1rem !important;
-    }
-
-    .panel {
-        min-height: 200px;
-    }
-
-    .title {
-        font-size: 1.35rem;
+        padding: .5rem !important;
     }
 }
 
@@ -512,7 +588,7 @@ def pct(value):
 
 
 def evaluate(data):
-    """Calculate accuracy and macro-averaged classification metrics."""
+    """Calculate accuracy and macro-averaged metrics."""
 
     actual = data["actual_label"]
     predicted = data["predicted_label"]
@@ -560,12 +636,11 @@ def evaluate(data):
 
 def kpi(label, value, subtitle):
 
-    if value is None:
-        value_html = '<div class="v pending">Pending</div>'
-    else:
-        value_html = (
-            f'<div class="v">{esc(value)}</div>'
-        )
+    value_html = (
+        f'<div class="v">{esc(value)}</div>'
+        if value is not None
+        else '<div class="v pending">Pending</div>'
+    )
 
     return f"""
     <div class="card kpi">
@@ -662,8 +737,8 @@ def confusion(matrix):
     <div class="note">
         Rows = Actual labels.
         Columns = Predicted labels.
-        Blue = Correct predictions.
-        Red = Incorrect predictions.
+        Blue = Correct.
+        Red = Incorrect.
     </div>
     """
 
@@ -692,7 +767,6 @@ def test_mlflow_connection():
             + ", ".join(missing)
         )
 
-    # Obtain credentials securely
     tracking_uri = str(
         st.secrets["MLFLOW_TRACKING_URI"]
     ).strip()
@@ -705,7 +779,6 @@ def test_mlflow_connection():
         st.secrets["MLFLOW_TRACKING_PASSWORD"]
     ).strip()
 
-    # Configure DagsHub authentication
     os.environ["MLFLOW_TRACKING_URI"] = tracking_uri
     os.environ["MLFLOW_TRACKING_USERNAME"] = username
     os.environ["MLFLOW_TRACKING_PASSWORD"] = password
@@ -720,30 +793,23 @@ def test_mlflow_connection():
         tracking_uri=tracking_uri
     )
 
-    # Verify server access
-    client.search_experiments(
-        max_results=1
-    )
+    # Verify access
+    client.search_experiments(max_results=1)
 
-    experiment_name = (
-        "CPR_Dashboard_Connection_Check"
-    )
+    experiment_name = "CPR_Dashboard_Connection_Check"
 
     experiment = client.get_experiment_by_name(
         experiment_name
     )
 
     if experiment is None:
-
         experiment_id = client.create_experiment(
             experiment_name
         )
-
     else:
-
         experiment_id = experiment.experiment_id
 
-    # Record connection test only
+    # Connection test only. No CPR metrics.
     with mlflow.start_run(
         experiment_id=experiment_id,
         run_name="DagsHub Connection Check Only"
@@ -766,20 +832,19 @@ def test_mlflow_connection():
 
 
 # =====================================================
-# HEADER + CSV + MLFLOW BUTTON
+# HEADER + CSV + VISIBLE MLFLOW BUTTON
 # =====================================================
 
 head, upload_col, mlflow_col = st.columns(
-    [1.55, 1, .8],
-    gap="medium"
+    [1.55, 1.0, .85],
+    gap="small"
 )
 
 with head:
 
     st.markdown("""
     <div class="eyebrow">
-        NORTH EASTERN MINDANAO STATE UNIVERSITY,
-        LIANGA CAMPUS
+        NORTH EASTERN MINDANAO STATE UNIVERSITY, LIANGA CAMPUS
     </div>
 
     <div class="title">
@@ -787,8 +852,8 @@ with head:
     </div>
 
     <div class="sub">
-        Comparative research and experimental dashboard
-        for BS Computer Science
+        Comparative Research and Experimental Dashboard
+        | BS Computer Science
     </div>
     """, unsafe_allow_html=True)
 
@@ -798,104 +863,126 @@ with upload_col:
     uploaded = st.file_uploader(
         "Experimental predictions CSV",
         type=["csv"],
-        help="Upload evaluator-validated experimental predictions."
+        help="Upload validated experimental predictions."
     )
 
 
 with mlflow_col:
 
-    st.markdown("""
-    <div class="eyebrow">
-        HOSTED EXPERIMENT TRACKING
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div class="eyebrow">HOSTED EXPERIMENT TRACKING</div>',
+        unsafe_allow_html=True
+    )
 
     test_button = st.button(
         "Test MLflow Connection",
+        type="primary",
         use_container_width=True,
         key="mlflow_test_button"
     )
 
-    if test_button:
+
+# =====================================================
+# MLFLOW BUTTON ACTION
+# =====================================================
+
+if test_button:
+
+    try:
 
         with st.spinner("Connecting to DagsHub MLflow..."):
 
-            try:
+            run_id = test_mlflow_connection()
 
-                connection_run_id = test_mlflow_connection()
+            st.session_state["mlflow_status"] = "connected"
+            st.session_state["mlflow_run_id"] = run_id
 
-                st.session_state["mlflow_status"] = "connected"
-                st.session_state["mlflow_run_id"] = connection_run_id
-                st.session_state.pop("mlflow_error", None)
+            st.session_state.pop(
+                "mlflow_error",
+                None
+            )
 
-            except Exception as error:
+    except Exception as error:
 
-                st.session_state["mlflow_status"] = "failed"
-                st.session_state["mlflow_error"] = (
-                    type(error).__name__
-                )
-                st.session_state.pop("mlflow_run_id", None)
+        st.session_state["mlflow_status"] = "failed"
+
+        # Do not expose private credentials.
+        st.session_state["mlflow_error"] = (
+            type(error).__name__
+        )
+
+        st.session_state.pop(
+            "mlflow_run_id",
+            None
+        )
 
 
-# Connection feedback
+# Connection status
 if st.session_state.get("mlflow_status") == "connected":
 
-    st.success(
-        "DagsHub MLflow connection successful!"
-    )
-
-    st.code(
-        "Connection-check Run ID: "
-        + st.session_state["mlflow_run_id"]
+    run_id = st.session_state.get(
+        "mlflow_run_id",
+        ""
     )
 
     st.markdown(
-        "[Open DagsHub MLflow Tracking UI]"
-        "(https://dagshub.com/Kevs-CPU/"
-        "cpr-hybrid-assessment-COMPARISON-TESTING.mlflow)"
+        f"""
+        <div class="pills">
+            <span class="pill ok">
+                ✓ DagsHub MLflow Connected
+            </span>
+            <span class="pill">
+                Run ID: {esc(run_id[:12])}...
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 elif st.session_state.get("mlflow_status") == "failed":
 
-    st.error(
-        "MLflow connection failed: "
-        + st.session_state.get("mlflow_error", "Unknown error")
-    )
-
-    st.caption(
-        "Check Streamlit Secrets, tracking URI, token, "
-        "and DagsHub repository write permissions."
+    st.markdown(
+        f"""
+        <div class="pills">
+            <span class="pill bad">
+                MLflow Connection Failed:
+                {esc(st.session_state.get("mlflow_error", "Unknown error"))}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 else:
 
-    st.caption(
-        "MLflow connection has not been tested."
+    st.markdown(
+        """
+        <div class="pills">
+            <span class="pill">
+                MLflow connection not yet tested
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
 
-st.divider()
-
-
 # =====================================================
-# DATA LOADING AND VALIDATION
+# LOAD AND VALIDATE CSV
 # =====================================================
 
 df = None
 results = {}
-pills = (
-    '<span class="pill">'
-    'Upload an experimental predictions CSV to begin.'
-    '</span>'
-)
-
 validation_message = None
 
 if uploaded is not None:
 
     try:
 
-        raw = pd.read_csv(uploaded)
+        raw = pd.read_csv(
+            uploaded,
+            dtype="string"
+        )
 
         raw.columns = [
             str(column).strip().lower()
@@ -909,7 +996,9 @@ if uploaded is not None:
 
         if raw.empty:
 
-            validation_message = "The CSV contains no records."
+            validation_message = (
+                "The CSV contains no records."
+            )
 
         elif missing:
 
@@ -920,23 +1009,21 @@ if uploaded is not None:
 
         else:
 
-            df = raw.dropna(
-                subset=REQUIRED
-            ).copy()
+            df = raw.copy()
 
-            for column in [
-                "participant_id",
-                "clip_id",
-                "system",
-                "actual_label",
-                "predicted_label"
-            ]:
+            for column in REQUIRED:
 
                 df[column] = (
                     df[column]
-                    .astype(str)
+                    .astype("string")
                     .str.strip()
                 )
+
+            df = df.replace("", pd.NA)
+
+            df = df.dropna(
+                subset=REQUIRED
+            ).copy()
 
             df["actual_label"] = (
                 df["actual_label"].str.lower()
@@ -949,14 +1036,14 @@ if uploaded is not None:
             if df.empty:
 
                 validation_message = (
-                    "All rows contain missing required values."
+                    "No usable records remain after removing "
+                    "missing or blank values."
                 )
 
                 df = None
 
             else:
 
-                # Every sample must have one prediction per system.
                 duplicate_rows = df.duplicated(
                     subset=[
                         "system",
@@ -970,16 +1057,13 @@ if uploaded is not None:
 
                     validation_message = (
                         "Duplicate records found for the same "
-                        "system, participant, and clip. "
-                        "Check the CSV before evaluating."
+                        "system, participant, and clip."
                     )
 
                     df = None
 
                 else:
 
-                    # The evaluator label must be consistent
-                    # across all system predictions.
                     label_counts = (
                         df.groupby(
                             ["participant_id", "clip_id"]
@@ -990,8 +1074,8 @@ if uploaded is not None:
                     if (label_counts > 1).any():
 
                         validation_message = (
-                            "Inconsistent evaluator labels were "
-                            "found for the same test sample."
+                            "Inconsistent evaluator-approved labels "
+                            "were found for the same test sample."
                         )
 
                         df = None
@@ -1003,16 +1087,19 @@ if uploaded is not None:
     ):
 
         validation_message = (
-            "Cannot read the CSV. Please check the file format."
+            "Cannot read the uploaded CSV. Check the file format."
         )
 
     except Exception as error:
 
         validation_message = (
-            "Dataset processing error: "
-            + type(error).__name__
+            "Dataset error: " + type(error).__name__
         )
 
+
+# =====================================================
+# SYSTEM RESULTS
+# =====================================================
 
 if df is not None:
 
@@ -1026,7 +1113,7 @@ if df is not None:
         )
     }
 
-    # Verify that all systems use identical test samples
+    # Verify identical test sample coverage
     sample_sets = {
         system: set(
             zip(
@@ -1059,23 +1146,23 @@ if df is not None:
     if equal_samples:
 
         pills += (
-            '<span class="pill ok">'
-            'Same test samples'
-            '</span>'
+            '<span class="pill ok">Same test samples</span>'
         )
 
     elif len(systems) > 1:
 
         pills += (
-            '<span class="pill bad">'
-            'Different test samples'
-            '</span>'
+            '<span class="pill bad">Different test samples</span>'
         )
 
+else:
 
-if validation_message:
-
-    st.error(validation_message)
+    systems = []
+    pills = (
+        '<span class="pill">'
+        'Upload a valid experimental CSV to begin.'
+        '</span>'
+    )
 
 
 # =====================================================
@@ -1095,16 +1182,14 @@ if df is not None:
         None
     )
 
-    options = systems
-
     default_index = (
-        options.index(hybrid)
+        systems.index(hybrid)
         if hybrid else 0
     )
 
     status_col, switch_col = st.columns(
         [1.5, 1],
-        gap="medium"
+        gap="small"
     )
 
     with status_col:
@@ -1118,7 +1203,7 @@ if df is not None:
 
         view = st.radio(
             "System",
-            options,
+            systems,
             index=default_index,
             horizontal=True,
             label_visibility="collapsed"
@@ -1133,7 +1218,8 @@ else:
         unsafe_allow_html=True
     )
 
-st.divider()
+    if validation_message:
+        st.warning(validation_message)
 
 
 # =====================================================
@@ -1146,7 +1232,7 @@ subtitle = (
     "Waiting for experimental data"
 )
 
-cards = [
+kpi_items = [
     ("Accuracy", pct(cur["acc"]) if cur else None),
     ("Precision", pct(cur["prec"]) if cur else None),
     ("Recall", pct(cur["rec"]) if cur else None),
@@ -1154,23 +1240,22 @@ cards = [
     ("Records evaluated", str(cur["n"]) if cur else None)
 ]
 
-columns = st.columns(5, gap="small")
+kpi_columns = st.columns(
+    5,
+    gap="small"
+)
 
-for column, (label, value) in zip(columns, cards):
+for column, (label, value) in zip(
+    kpi_columns,
+    kpi_items
+):
 
     with column:
 
         st.markdown(
-            kpi(
-                label,
-                value,
-                subtitle
-            ),
+            kpi(label, value, subtitle),
             unsafe_allow_html=True
         )
-
-
-st.divider()
 
 
 # =====================================================
@@ -1178,7 +1263,7 @@ st.divider()
 # =====================================================
 
 c1, c2, c3 = st.columns(
-    [1.35, 1, 1.05],
+    [1.35, 1, 1.08],
     gap="small"
 )
 
@@ -1189,10 +1274,29 @@ with c1:
     body = (
         comparison(results, view)
         if cur else
-        '<div class="empty">'
-        'System comparison will appear after a valid CSV is uploaded.'
-        '</div>'
+        """
+        <div class="empty">
+            System comparison will appear after valid
+            experimental predictions are uploaded.
+        </div>
+        """
     )
+
+    if cur and len(systems) > 1:
+
+        sample_note = (
+            '<div class="note">'
+            'Same test samples: controlled comparison possible.'
+            '</div>'
+            if equal_samples
+            else
+            '<div class="note">'
+            'Different test samples: scores are not a direct '
+            'controlled comparison.'
+            '</div>'
+        )
+
+        body += sample_note
 
     st.markdown(
         f"""
@@ -1214,9 +1318,12 @@ with c2:
     body = (
         confusion(cur["cm"])
         if cur else
-        '<div class="empty">'
-        'Confusion matrix will appear after a valid CSV is uploaded.'
-        '</div>'
+        """
+        <div class="empty">
+            Confusion matrix will appear after valid
+            experimental predictions are uploaded.
+        </div>
+        """
     )
 
     st.markdown(
@@ -1224,7 +1331,7 @@ with c2:
         <div class="panel">
             <div class="ptitle">
                 Confusion Matrix
-                <span>{esc(view) if cur else ""}</span>
+                <span>{esc(view) if cur else "Pending"}</span>
             </div>
             {body}
         </div>
@@ -1233,7 +1340,7 @@ with c2:
     )
 
 
-# RESEARCH FRAMEWORK + GBC DETAILS
+# RESEARCH FRAMEWORK AND GBC
 with c3:
 
     st.markdown("""
@@ -1311,29 +1418,11 @@ with c3:
 
 
 # =====================================================
-# DATASET VALIDATION INFORMATION
+# FOOTER
 # =====================================================
 
-if df is not None:
-
-    st.divider()
-
-    with st.expander("View validated experimental dataset"):
-
-        st.dataframe(
-            df,
-            use_container_width=True
-        )
-
-        st.caption(
-            "These metrics are computed from the uploaded "
-            "predictions and evaluator-approved actual labels."
-        )
-
-st.divider()
-
 st.caption(
-    "Supplementary CPR research and training tool. "
+    "Supplementary CPR research tool. "
     "Not a replacement for qualified CPR instructors, "
     "instrumented manikins, or official CPR guidelines."
 )
