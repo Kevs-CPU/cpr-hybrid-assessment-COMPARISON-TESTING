@@ -291,3 +291,154 @@ with c3:
 <div class="fw"><b>Gradient Boosting Classifier</b><div>Provisional model. MLflow experiment tracking: not connected.</div></div>
 <div class="foot">NEMSU Lianga Campus, AI-Assisted CPR Research Project, 2026</div></div>
 """, unsafe_allow_html=True)
+
+
+# ==================================================
+# HOSTED MLFLOW CONNECTION TEST
+# ==================================================
+
+def test_mlflow_connection():
+
+    required_secrets = [
+        "MLFLOW_TRACKING_URI",
+        "MLFLOW_TRACKING_USERNAME",
+        "MLFLOW_TRACKING_PASSWORD"
+    ]
+
+    missing = [
+        key for key in required_secrets
+        if key not in st.secrets
+    ]
+
+    if missing:
+        raise ValueError(
+            "Missing Streamlit Secrets: " + ", ".join(missing)
+        )
+
+    # Load private credentials from Streamlit Secrets
+    os.environ["MLFLOW_TRACKING_URI"] = str(
+        st.secrets["MLFLOW_TRACKING_URI"]
+    )
+
+    os.environ["MLFLOW_TRACKING_USERNAME"] = str(
+        st.secrets["MLFLOW_TRACKING_USERNAME"]
+    )
+
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = str(
+        st.secrets["MLFLOW_TRACKING_PASSWORD"]
+    )
+
+    # Import after setting credentials
+    import mlflow
+    from mlflow.tracking import MlflowClient
+
+    tracking_uri = os.environ["MLFLOW_TRACKING_URI"]
+
+    mlflow.set_tracking_uri(tracking_uri)
+
+    client = MlflowClient(
+        tracking_uri=tracking_uri
+    )
+
+    # Verify access to the tracking server
+    client.search_experiments(max_results=1)
+
+    # Create a separate connection-check experiment
+    experiment_name = "CPR_Dashboard_Connection_Check"
+
+    experiment = client.get_experiment_by_name(
+        experiment_name
+    )
+
+    if experiment is None:
+        experiment_id = client.create_experiment(
+            experiment_name
+        )
+    else:
+        experiment_id = experiment.experiment_id
+
+    # Log a connection check only.
+    # No model accuracy or CPR evaluation metrics.
+    with mlflow.start_run(
+        experiment_id=experiment_id,
+        run_name="DagsHub Connection Check Only"
+    ):
+
+        mlflow.set_tags({
+            "run_type": "connection_check",
+            "not_model_evaluation": "true",
+            "project": "AI-Assisted CPR Research"
+        })
+
+        mlflow.log_param(
+            "purpose",
+            "Verify Streamlit to DagsHub connectivity"
+        )
+
+        run_id = mlflow.active_run().info.run_id
+
+    return run_id
+
+
+# ==================================================
+# MLFLOW DASHBOARD CONNECTION PANEL
+# ==================================================
+
+st.divider()
+
+st.markdown(
+    '<div class="section-title">MLflow Experiment Tracking</div>',
+    unsafe_allow_html=True
+)
+
+st.caption(
+    "Connect the live CPR dashboard to the hosted "
+    "DagsHub MLflow tracking server."
+)
+
+if st.button(
+    "Test MLflow Connection",
+    type="primary",
+    use_container_width=True
+):
+
+    with st.spinner(
+        "Connecting to DagsHub MLflow..."
+    ):
+
+        try:
+            run_id = test_mlflow_connection()
+
+            st.success(
+                "Successfully connected to DagsHub MLflow! "
+                "Connection-check run recorded."
+            )
+
+            st.code(
+                f"Connection-check Run ID: {run_id}"
+            )
+
+            st.markdown(
+                "[Open DagsHub MLflow Tracking UI]"
+                "(https://dagshub.com/Kevs-CPU/"
+                "cpr-hybrid-assessment-COMPARISON-TESTING.mlflow)"
+            )
+
+            st.info(
+                "This is a connection test only. "
+                "No CPR model was trained and no performance "
+                "metrics were recorded."
+            )
+
+        except Exception as error:
+
+            st.error(
+                f"MLflow connection failed: "
+                f"{type(error).__name__}: {error}"
+            )
+
+            st.warning(
+                "Check your tracking URI, credentials, "
+                "repository permissions, and deployment logs."
+            )
+
